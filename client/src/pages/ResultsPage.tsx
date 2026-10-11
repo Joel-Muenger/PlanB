@@ -1,0 +1,22 @@
+import { ArrowLeft, AlertTriangle, LoaderCircle, MapPin } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import AlternativeCard from '../components/AlternativeCard';
+import Layout from '../components/Layout';
+import RouteMap from '../components/RouteMap';
+import type { Alternative, DisruptionType, SortMode } from '../types';
+const filters: { id: SortMode; label: string }[] = [{ id: 'fastest', label: 'Schnellste' }, { id: 'cheapest', label: 'Günstigste' }, { id: 'sustainable', label: 'Nachhaltigste' }];
+const fallback: Alternative[] = [
+  { id: 'train-1', name: 'Alternativzug via Ostermundigen', category: 'train', travelTime: 32, price: 0, sustainabilityScore: 10, providerUrl: 'https://www.sbb.ch' },
+  { id: 'taxi-1', name: 'Taxi Bern', category: 'taxi', travelTime: 18, price: 42, sustainabilityScore: 2, providerUrl: 'https://www.taxi-bern.ch' },
+  { id: 'bike-1', name: 'PubliBike', category: 'bike', travelTime: 25, price: 7, sustainabilityScore: 9, providerUrl: 'https://www.publibike.ch' },
+  { id: 'car-1', name: 'Mobility Carsharing', category: 'car', travelTime: 22, price: 15, sustainabilityScore: 6, providerUrl: 'https://www.mobility.ch' }
+];
+export default function ResultsPage() {
+  const location = useLocation(); const state = location.state as { origin?: string; destination?: string; disruption?: DisruptionType } | null;
+  const origin = state?.origin || 'Bern Bahnhof'; const destination = state?.destination || 'Wankdorf Bahnhof'; const disruption = state?.disruption || 'Zug fällt aus';
+  const [items, setItems] = useState<Alternative[]>([]); const [loading, setLoading] = useState(true); const [sort, setSort] = useState<SortMode>('fastest');
+  useEffect(() => { fetch(`/api/alternatives?disruption=${encodeURIComponent(disruption)}`).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => setItems(data.alternatives)).catch(() => setItems(fallback)).finally(() => setLoading(false)); }, [disruption]);
+  const sorted = useMemo(() => [...items].sort((a, b) => sort === 'fastest' ? a.travelTime - b.travelTime : sort === 'cheapest' ? a.price - b.price : b.sustainabilityScore - a.sustainabilityScore), [items, sort]);
+  return <Layout><Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand"><ArrowLeft size={17} /> Route ändern</Link><div className="mt-5 grid gap-7 lg:grid-cols-[1fr_1.25fr]"><aside className="space-y-5"><RouteMap origin={origin} destination={destination} /><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><div className="flex gap-3"><AlertTriangle className="shrink-0 text-amber-600" /><div><p className="font-bold text-amber-950">{disruption}</p><p className="mt-1 text-sm leading-relaxed text-amber-900">Deine ursprüngliche Verbindung ist beeinträchtigt. Hier sind passende Alternativen.</p></div></div></div><div className="rounded-2xl bg-white p-5 shadow-card"><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Route</p><div className="mt-3 flex items-start gap-2 text-sm"><MapPin size={17} className="text-brand" /><span>{origin}<br /><span className="text-slate-400">nach</span><br />{destination}</span></div></div></aside><section><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-brand">Plan B für deine Reise</p><h1 className="mt-1 text-3xl font-extrabold">Alternativen vergleichen</h1></div><p className="text-sm text-slate-500">{items.length || 4} Optionen</p></div><div className="mt-5 flex gap-2 overflow-x-auto pb-1">{filters.map((filter) => <button key={filter.id} onClick={() => setSort(filter.id)} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition ${sort === filter.id ? 'bg-ink text-white' : 'bg-white text-slate-600 shadow-sm hover:bg-slate-100'}`}>{filter.label}</button>)}</div>{loading ? <div className="grid min-h-64 place-items-center"><LoaderCircle className="animate-spin text-brand" /></div> : <div className="mt-5 grid gap-4 sm:grid-cols-2">{sorted.map((alternative, index) => <AlternativeCard key={alternative.id} alternative={alternative} featured={index === 0} />)}</div>}<p className="mt-5 text-center text-xs leading-relaxed text-slate-400">Plan B vermittelt nur an externe Anbieter. Preise und Zeiten sind Schätzwerte für diesen Prototyp.</p></section></div></Layout>;
+}
