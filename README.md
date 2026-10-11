@@ -10,6 +10,8 @@ Plan B bündelt bei ÖV-Störungen exemplarische Mobilitätsalternativen für Pe
 - Anbieter-Links als externe Weiterleitung
 - Responsive, mobile-first Oberfläche in Weiss, Dunkelblau und Hellblau
 - OpenStreetMap/Leaflet-Karte mit Mock-Route in Bern
+- „Standort“-Button: ermittelt die nächste ÖV-Haltestelle zur Geräteposition (via transport.opendata.ch)
+- Installierbar als Progressive Web App (Homescreen-Icon, Vollbild)
 
 ## Voraussetzungen
 
@@ -32,6 +34,8 @@ npm run typecheck
 npm run lint
 npm run format:check   # bzw. npm run format zum Formatieren
 ```
+
+Die PWA-Funktionen (Service Worker, Installation) sind nur im Produktionsbuild aktiv. Zum Testen: `npm run build`, dann API mit `npm start` und Oberfläche mit `npx vite preview` im Ordner `client` starten (http://localhost:4173).
 
 Für einen Produktionsbuild:
 
@@ -72,6 +76,7 @@ Die Startseite übergibt die Routen- und Störungsdaten über React Router an di
 
 - `GET /api/health` – einfacher Statuscheck
 - `GET /api/alternatives?disruption=Zug%20fällt%20aus` – Störung und Optionen
+- `GET /api/stops/nearby?lat=46.949&lon=7.439` – nächstgelegene ÖV-Haltestellen
 
 Das Objekt `Alternative` enthält `id`, `name`, `category`, `travelTime`, `price`, `sustainabilityScore` und `providerUrl`.
 

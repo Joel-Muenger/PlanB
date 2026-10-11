@@ -22,20 +22,24 @@ Nach Änderungen immer `npm run typecheck`, `npm run lint` und `npm run format:c
 
 ```
 React (client/src) → fetch('/api/...') → Vite-Proxy → Express (server/src/index.ts) → server/data/alternatives.json
+                                                                   └→ server/src/stops.ts → transport.opendata.ch
 ```
 
+Die App ist eine **PWA** (vite-plugin-pwa, `registerType: 'autoUpdate'`): Manifest und Service Worker werden nur im Produktionsbuild erzeugt, also mit `npm run build` und `npx vite preview` im client testen. `/api/*` ist vom Navigations-Fallback ausgenommen und wird nicht gecacht. Die Icons in `client/public` werden aus `client/public/logo.svg` erzeugt: `npm run generate-pwa-assets -w client`.
+
 - **client/**: React 18, TypeScript (strict), Vite 6, Tailwind 3, React Router 7, react-leaflet 4, lucide-react.
-  - `pages/HomePage.tsx` – Formular (Start, Ziel, simulierte Störung), navigiert mit `navigate('/alternativen', { state })`.
+  - `pages/HomePage.tsx` – Formular (Start, Ziel, simulierte Störung), navigiert mit `navigate('/alternativen', { state })`. Der Button „Standort“ im Startfeld ermittelt die Geräteposition und setzt die nächste ÖV-Haltestelle ein (`lib/location.ts`).
   - `pages/ResultsPage.tsx` – liest den Router-State, ruft `GET /api/alternatives` auf, sortiert clientseitig (schnellste/günstigste/nachhaltigste).
-  - `components/` – `Layout`, `LocationInput`, `DisruptionSelect`, `AlternativeCard`, `RouteMap` (fest kodierte Mock-Route in Bern, OSM-Kacheln).
+  - `components/` – `Layout`, `LocationInput`, `DisruptionSelect`, `AlternativeCard`, `RouteMap` (echte Position, falls geortet, sonst fest kodierte Mock-Route; OSM-Kacheln).
 - **server/**: Express 4, ESM (`"type": "module"`, `NodeNext`). Relative Imports brauchen deshalb die Endung `.js` (z. B. `./routes.js`). JSON-Import mit `with { type: 'json' }`.
-  - `GET /api/health`, `GET /api/alternatives?disruption=<DisruptionType>`.
+  - `GET /api/health`, `GET /api/alternatives?disruption=<DisruptionType>`, `GET /api/stops/nearby?lat=&lon=` (bis zu 5 Haltestellen, sortiert nach Distanz). Achtung: transport.opendata.ch verwendet `x` = Breite, `y` = Länge; Einträge ohne `id` sind Adressen und werden verworfen.
 - **shared/** (`@plan-b/shared`): einzige Quelle für API-Typen (`Alternative`, `AlternativeCategory`, `DisruptionType`, `AlternativesResponse`) und Konstanten (`DISRUPTION_TYPES`, `isDisruptionType`). Wird mit `tsc` nach `shared/dist` gebaut; `exports` zeigt auf `dist`. Client und Server importieren aus `@plan-b/shared`. Nach einem frischen Clone ohne `npm run dev`/`build`/`typecheck` fehlen deshalb die Typen, bis `npm run build -w shared` gelaufen ist.
   - `client/src/types.ts` re-exportiert die geteilten Typen und enthält nur Client-eigene Typen (`SortMode`, `RouteRequest`).
 
 ## Bekannte Einschränkungen
 
-- Start/Ziel und Störungstyp beeinflussen die Ergebnisse noch nicht, die Karte zeigt immer dieselbe Route.
+- Start/Ziel und Störungstyp beeinflussen die Ergebnisse noch nicht. Ohne Ortung zeigt die Karte eine Mock-Route; mit Ortung nur die eigene Position (das Ziel hat noch keine Koordinaten).
+- Geolocation funktioniert nur über HTTPS oder `localhost`. Zum Testen auf dem Handy im WLAN braucht es deshalb HTTPS.
 - Der Zustand der Resultatseite geht beim Neuladen verloren (Router-State statt URL-Parameter).
 - `npm audit` meldet Schwachstellen in Build-Abhängigkeiten von Tailwind 3 (braces, micromatch, postcss-selector-parser). Behebung nur über Upgrade auf Tailwind 4.
 
@@ -44,7 +48,7 @@ React (client/src) → fetch('/api/...') → Vite-Proxy → Express (server/src/
 - UI-Texte auf Deutsch (Schweiz): „Velo“, „ÖV“, Preise als „CHF …“, kein „ß“.
 - Formatierung durch Prettier (`singleQuote`, `printWidth: 100`), nicht manuell.
 - Styling ausschliesslich mit Tailwind. Projektfarben aus `client/tailwind.config.js` verwenden: `ink` (#102A43), `sky` (#E8F5FF), `brand` (#1677C8), Schatten `shadow-card`.
-- Mobile-first, responsive Layouts (Breakpoints `sm`, `lg`).
+- Mobile-first, responsive Layouts (Breakpoints `sm`, `lg`). Eingabefelder auf Mobilgeräten mindestens `text-base` (16px), sonst zoomt iOS beim Fokussieren. Safe-Area-Insets werden in `Layout` berücksichtigt.
 - Funktionskomponenten mit Default-Export, eine Komponente pro Datei.
 - Externe Links mit `target="_blank" rel="noreferrer"`.
 - Zeilenenden LF (über `.gitattributes` erzwungen).

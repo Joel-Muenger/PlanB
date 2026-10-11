@@ -25,3 +25,19 @@ export interface AlternativesResponse {
 export function isDisruptionType(value: unknown): value is DisruptionType {
   return DISRUPTION_TYPES.includes(value as DisruptionType);
 }
+
+export interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
+export interface NearbyStop extends Coordinates {
+  id: string;
+  name: string;
+  /** Distanz zur angefragten Position in Metern */
+  distance: number;
+}
+
+export interface NearbyStopsResponse {
+  stops: NearbyStop[];
+}

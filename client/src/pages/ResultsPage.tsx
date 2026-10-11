@@ -66,7 +66,11 @@ export default function ResultsPage() {
       </Link>
       <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_1.25fr]">
         <aside className="space-y-5">
-          <RouteMap origin={origin} destination={destination} />
+          <RouteMap
+            origin={origin}
+            destination={destination}
+            originPosition={state?.originPosition}
+          />
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
             <div className="flex gap-3">
               <AlertTriangle className="shrink-0 text-amber-600" />

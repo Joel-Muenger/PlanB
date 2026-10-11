@@ -1,21 +1,47 @@
-import { ArrowRight, Route as RouteIcon } from 'lucide-react';
+import { ArrowRight, LoaderCircle, LocateFixed, Route as RouteIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DISRUPTION_TYPES } from '@plan-b/shared';
 import DisruptionSelect from '../components/DisruptionSelect';
 import Layout from '../components/Layout';
 import LocationInput from '../components/LocationInput';
-import type { DisruptionType, RouteRequest } from '../types';
+import { LocationError, locateNearestStop } from '../lib/location';
+import type { Coordinates, DisruptionType, RouteRequest } from '../types';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [origin, setOrigin] = useState('Bern Bahnhof');
   const [destination, setDestination] = useState('Wankdorf Bahnhof');
   const [disruption, setDisruption] = useState<DisruptionType>(DISRUPTION_TYPES[0]);
+  const [originPosition, setOriginPosition] = useState<Coordinates>();
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const changeOrigin = (value: string) => {
+    setOrigin(value);
+    setOriginPosition(undefined);
+    setLocationError(null);
+  };
+
+  const locateOrigin = async () => {
+    setLocating(true);
+    setLocationError(null);
+    try {
+      const { position, stop } = await locateNearestStop();
+      setOrigin(stop.name);
+      setOriginPosition(position);
+    } catch (error) {
+      setLocationError(
+        error instanceof LocationError ? error.message : 'Standort konnte nicht ermittelt werden.',
+      );
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const state: RouteRequest = { origin, destination, disruption };
+    const state: RouteRequest = { origin, destination, disruption, originPosition };
     navigate('/alternativen', { state });
   };
 
@@ -42,8 +68,25 @@ export default function HomePage() {
           <LocationInput
             label="Startort"
             value={origin}
-            onChange={setOrigin}
+            onChange={changeOrigin}
             placeholder="z. B. Bern Bahnhof"
+            error={locationError}
+            action={
+              <button
+                type="button"
+                onClick={locateOrigin}
+                disabled={locating}
+                title="Nächste Haltestelle zu deinem aktuellen Standort verwenden"
+                className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-brand transition hover:bg-blue-50 disabled:opacity-60"
+              >
+                {locating ? (
+                  <LoaderCircle size={18} className="animate-spin" />
+                ) : (
+                  <LocateFixed size={18} />
+                )}
+                {locating ? 'Suche…' : 'Standort'}
+              </button>
+            }
           />
           <LocationInput
             label="Zielort"
