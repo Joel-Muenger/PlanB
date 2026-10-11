@@ -4,20 +4,19 @@ Plan B ist ein Fachhochschul-MVP: Bei ÖV-Störungen in der Region Bern zeigt di
 
 ## Befehle
 
-Alle Befehle im Projekt-Root ausführen (npm Workspaces `client` und `server`):
+Alle Befehle im Projekt-Root ausführen (npm Workspaces `shared`, `client`, `server`):
 
 ```bash
-npm install                 # Abhängigkeiten für beide Workspaces
-npm run dev                 # Express (:3001, tsx watch) + Vite (:5173) parallel via concurrently
-npm run build               # server: tsc → server/dist, client: tsc -b && vite build → client/dist
+npm install                 # Abhängigkeiten für alle Workspaces
+npm run dev                 # baut shared, dann shared (tsc --watch) + Express (:3001) + Vite (:5173) parallel
+npm run build               # shared → server/dist → client/dist
 npm start                   # nur node server/dist/index.js (liefert client/dist derzeit NICHT aus)
-
-# Typecheck ohne Build-Artefakte
-npx tsc --noEmit -p server/tsconfig.json
-npx tsc --noEmit -p client/tsconfig.app.json
+npm run typecheck           # baut shared, dann tsc --noEmit für server und client
+npm run lint                # ESLint (flat config, typescript-eslint, react-hooks)
+npm run format              # Prettier (format:check zum reinen Prüfen)
 ```
 
-Es gibt noch keine Tests, keinen Linter und keinen Formatter.
+Nach Änderungen immer `npm run typecheck`, `npm run lint` und `npm run format:check` ausführen. Tests gibt es noch nicht.
 
 ## Architektur
 
@@ -29,20 +28,21 @@ React (client/src) → fetch('/api/...') → Vite-Proxy → Express (server/src/
   - `pages/HomePage.tsx` – Formular (Start, Ziel, simulierte Störung), navigiert mit `navigate('/alternativen', { state })`.
   - `pages/ResultsPage.tsx` – liest den Router-State, ruft `GET /api/alternatives` auf, sortiert clientseitig (schnellste/günstigste/nachhaltigste).
   - `components/` – `Layout`, `LocationInput`, `DisruptionSelect`, `AlternativeCard`, `RouteMap` (fest kodierte Mock-Route in Bern, OSM-Kacheln).
-- **server/**: Express 4, ESM (`"type": "module"`, `NodeNext`). Relative Imports brauchen deshalb die Endung `.js` (z. B. `./types.js`). JSON-Import mit `with { type: 'json' }`.
+- **server/**: Express 4, ESM (`"type": "module"`, `NodeNext`). Relative Imports brauchen deshalb die Endung `.js` (z. B. `./routes.js`). JSON-Import mit `with { type: 'json' }`.
   - `GET /api/health`, `GET /api/alternatives?disruption=<DisruptionType>`.
-- **Typen** (`Alternative`, `AlternativeCategory`, `DisruptionType`) sind in `client/src/types.ts` und `server/src/types.ts` doppelt definiert. Bei Änderungen beide anpassen, ebenso die Störungsliste in `server/src/index.ts` und `client/src/components/DisruptionSelect.tsx`.
+- **shared/** (`@plan-b/shared`): einzige Quelle für API-Typen (`Alternative`, `AlternativeCategory`, `DisruptionType`, `AlternativesResponse`) und Konstanten (`DISRUPTION_TYPES`, `isDisruptionType`). Wird mit `tsc` nach `shared/dist` gebaut; `exports` zeigt auf `dist`. Client und Server importieren aus `@plan-b/shared`. Nach einem frischen Clone ohne `npm run dev`/`build`/`typecheck` fehlen deshalb die Typen, bis `npm run build -w shared` gelaufen ist.
+  - `client/src/types.ts` re-exportiert die geteilten Typen und enthält nur Client-eigene Typen (`SortMode`, `RouteRequest`).
 
 ## Bekannte Einschränkungen
 
 - Start/Ziel und Störungstyp beeinflussen die Ergebnisse noch nicht, die Karte zeigt immer dieselbe Route.
-- `ResultsPage.tsx` enthält eine Kopie der Mock-Daten als Fallback, falls die API nicht erreichbar ist. Das verdeckt Backend-Fehler.
 - Der Zustand der Resultatseite geht beim Neuladen verloren (Router-State statt URL-Parameter).
-- `@types/express` ist v5, `express` ist v4.
+- `npm audit` meldet Schwachstellen in Build-Abhängigkeiten von Tailwind 3 (braces, micromatch, postcss-selector-parser). Behebung nur über Upgrade auf Tailwind 4.
 
 ## Konventionen
 
 - UI-Texte auf Deutsch (Schweiz): „Velo“, „ÖV“, Preise als „CHF …“, kein „ß“.
+- Formatierung durch Prettier (`singleQuote`, `printWidth: 100`), nicht manuell.
 - Styling ausschliesslich mit Tailwind. Projektfarben aus `client/tailwind.config.js` verwenden: `ink` (#102A43), `sky` (#E8F5FF), `brand` (#1677C8), Schatten `shadow-card`.
 - Mobile-first, responsive Layouts (Breakpoints `sm`, `lg`).
 - Funktionskomponenten mit Default-Export, eine Komponente pro Datei.

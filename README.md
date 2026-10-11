@@ -25,6 +25,14 @@ npm run dev
 
 Danach ist die Oberfläche unter `http://localhost:5173` erreichbar. Die Express-API läuft auf `http://localhost:3001`.
 
+Qualitätsprüfungen:
+
+```bash
+npm run typecheck
+npm run lint
+npm run format:check   # bzw. npm run format zum Formatieren
+```
+
 Für einen Produktionsbuild:
 
 ```bash
@@ -40,11 +48,13 @@ plan-b/
 │   └── src/
 │       ├── components/        # Wiederverwendbare UI-Elemente
 │       ├── pages/             # Start- und Resultatseite
-│       ├── types.ts           # Gemeinsame Frontend-Typen
+│       ├── types.ts           # Client-Typen (re-exportiert shared)
 │       └── App.tsx            # Client-Routing
 ├── server/                    # Node.js + Express + TypeScript
 │   ├── data/alternatives.json # Lokale Mock-Daten
 │   └── src/index.ts           # REST-API
+├── shared/                    # @plan-b/shared: gemeinsame Typen und Konstanten
+│   └── src/index.ts
 └── package.json               # Workspaces und gemeinsame Befehle
 ```
 

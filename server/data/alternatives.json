@@ -1,6 +1,38 @@
 [
-  { "id": "train-1", "name": "Alternativzug via Ostermundigen", "category": "train", "travelTime": 32, "price": 0, "sustainabilityScore": 10, "providerUrl": "https://www.sbb.ch" },
-  { "id": "taxi-1", "name": "Taxi Bern", "category": "taxi", "travelTime": 18, "price": 42, "sustainabilityScore": 2, "providerUrl": "https://www.taxi-bern.ch" },
-  { "id": "bike-1", "name": "PubliBike", "category": "bike", "travelTime": 25, "price": 7, "sustainabilityScore": 9, "providerUrl": "https://www.publibike.ch" },
-  { "id": "car-1", "name": "Mobility Carsharing", "category": "car", "travelTime": 22, "price": 15, "sustainabilityScore": 6, "providerUrl": "https://www.mobility.ch" }
+  {
+    "id": "train-1",
+    "name": "Alternativzug via Ostermundigen",
+    "category": "train",
+    "travelTime": 32,
+    "price": 0,
+    "sustainabilityScore": 10,
+    "providerUrl": "https://www.sbb.ch"
+  },
+  {
+    "id": "taxi-1",
+    "name": "Taxi Bern",
+    "category": "taxi",
+    "travelTime": 18,
+    "price": 42,
+    "sustainabilityScore": 2,
+    "providerUrl": "https://www.taxi-bern.ch"
+  },
+  {
+    "id": "bike-1",
+    "name": "PubliBike",
+    "category": "bike",
+    "travelTime": 25,
+    "price": 7,
+    "sustainabilityScore": 9,
+    "providerUrl": "https://www.publibike.ch"
+  },
+  {
+    "id": "car-1",
+    "name": "Mobility Carsharing",
+    "category": "car",
+    "travelTime": 22,
+    "price": 15,
+    "sustainabilityScore": 6,
+    "providerUrl": "https://www.mobility.ch"
+  }
 ]
