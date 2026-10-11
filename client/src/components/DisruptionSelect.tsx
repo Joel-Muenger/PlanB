@@ -16,7 +16,7 @@ export default function DisruptionSelect({ value, onChange }: Props) {
         <select
           value={value}
           onChange={(e) => onChange(e.target.value as DisruptionType)}
-          className="w-full bg-transparent text-sm font-medium outline-none"
+          className="w-full bg-transparent text-base font-medium outline-none sm:text-sm"
         >
           {DISRUPTION_TYPES.map((option) => (
             <option key={option}>{option}</option>
