@@ -22,48 +22,49 @@ export default function AlternativeCard({
   const Icon = icons[alternative.category];
   return (
     <article
-      className={`relative rounded-2xl border bg-white p-5 shadow-card ${featured ? 'border-brand ring-1 ring-brand' : 'border-slate-100'}`}
+      className={`relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-card ${featured ? 'border-wine ring-1 ring-wine' : 'border-slate-100'}`}
     >
       {featured && (
-        <span className="absolute -top-3 left-5 rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">
+        <span className="absolute -top-3 left-5 rounded-full bg-wine px-3 py-1 text-xs font-bold text-white">
           Beste Wahl
         </span>
       )}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-brand">
-            <Icon size={23} />
-          </span>
-          <div>
-            <p className="font-bold">{alternative.name}</p>
-            <p className="mt-1 text-xs font-medium text-slate-500">
-              {labels[alternative.category]}
-            </p>
-          </div>
-        </div>
-        <span className="flex items-center gap-1 text-sm font-bold text-emerald-700">
-          <Leaf size={16} />
-          {alternative.sustainabilityScore}/10
+      <div className="flex gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-wine/5 text-wine">
+          <Icon size={23} />
         </span>
+        <div className="min-w-0">
+          <p className="font-bold">{alternative.name}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs font-medium text-slate-500">
+            {labels[alternative.category]}
+            <span
+              className="inline-flex items-center gap-1 whitespace-nowrap font-bold text-emerald-700"
+              title="Nachhaltigkeit"
+            >
+              <Leaf size={14} />
+              {alternative.sustainabilityScore}/10
+            </span>
+          </p>
+        </div>
       </div>
-      <div className="my-5 grid grid-cols-2 gap-3">
+      <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
         <div className="rounded-xl bg-slate-50 p-3">
           <p className="text-xs text-slate-500">Reisezeit</p>
           <p className="mt-1 flex items-center gap-1 font-bold">
-            <Zap size={15} className="text-brand" />
+            <Zap size={15} className="text-wine" />
             {alternative.travelTime} Min.
           </p>
         </div>
         <div className="rounded-xl bg-slate-50 p-3">
           <p className="text-xs text-slate-500">Kosten</p>
           <p className="mt-1 flex items-center gap-1 font-bold">
-            <Wallet size={15} className="text-brand" />
+            <Wallet size={15} className="text-wine" />
             CHF {alternative.price}
           </p>
         </div>
       </div>
       <a
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700"
+        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-wine px-4 py-3 text-sm font-bold text-white transition hover:bg-wine/90"
         href={alternative.providerUrl}
         target="_blank"
         rel="noreferrer"

@@ -3,18 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npm run build -w shared && concurrently -n shared,server,client -c gray,green,blue \"npm run dev -w shared\" \"npm run dev -w server\" \"npm run dev -w client\"",
-    "build": "npm run build -w shared && npm run build -w server && npm run build -w client",
-    "start": "npm run start -w server",
-    "typecheck": "npm run build -w shared && tsc --noEmit -p server/tsconfig.json && tsc --noEmit -p client/tsconfig.app.json && tsc --noEmit -p client/tsconfig.node.json",
+    "dev": "npm run build -w shared && concurrently -n shared,client -c gray,blue \"npm run dev -w shared\" \"npm run dev -w client\"",
+    "build": "npm run build -w shared && npm run build -w client",
+    "start": "npm run preview -w client",
+    "typecheck": "npm run build -w shared && tsc --noEmit -p client/tsconfig.app.json && tsc --noEmit -p client/tsconfig.node.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "workspaces": [
     "shared",
-    "client",
-    "server"
+    "client"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",

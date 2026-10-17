@@ -8,7 +8,7 @@ Plan B bündelt bei ÖV-Störungen exemplarische Mobilitätsalternativen für Pe
 - Alternativzug, Taxi, PubliBike und Carsharing aus lokalen Mock-Daten
 - Sortierung nach schnellster, günstigster oder nachhaltigster Option
 - Anbieter-Links als externe Weiterleitung
-- Responsive, mobile-first Oberfläche in Weiss, Dunkelblau und Hellblau
+- Responsive, mobile-first Oberfläche in Wine Red und Light Sand, mit Web-/iPhone-Ansicht
 - OpenStreetMap/Leaflet-Karte mit Mock-Route in Bern
 - „Standort“-Button: ermittelt die nächste ÖV-Haltestelle zur Geräteposition (via transport.opendata.ch)
 - Installierbar als Progressive Web App (Homescreen-Icon, Vollbild)
@@ -25,7 +25,7 @@ npm install
 npm run dev
 ```
 
-Danach ist die Oberfläche unter `http://localhost:5173` erreichbar. Die Express-API läuft auf `http://localhost:3001`.
+Danach ist die App unter `http://localhost:5173` erreichbar. Es gibt keinen eigenen Server: Die Mock-Daten sind im Frontend eingebaut, Haltestellen kommen direkt von transport.opendata.ch.
 
 Qualitätsprüfungen:
 
@@ -35,14 +35,19 @@ npm run lint
 npm run format:check   # bzw. npm run format zum Formatieren
 ```
 
-Die PWA-Funktionen (Service Worker, Installation) sind nur im Produktionsbuild aktiv. Zum Testen: `npm run build`, dann API mit `npm start` und Oberfläche mit `npx vite preview` im Ordner `client` starten (http://localhost:4173).
-
-Für einen Produktionsbuild:
+Die PWA-Funktionen (Service Worker, Installation) sind nur im Produktionsbuild aktiv. Zum Testen:
 
 ```bash
 npm run build
-npm start
+npm start            # vite preview, http://localhost:4173
 ```
+
+## Veröffentlichung auf GitHub Pages
+
+Der Workflow `.github/workflows/deploy.yml` prüft (Typecheck, Lint), baut und veröffentlicht die App bei jedem Push auf `main` unter `https://<name>.github.io/<repo>/`. Einmalig im Repository unter **Settings → Pages → Source** „GitHub Actions“ wählen.
+
+- Der Basispfad kommt aus der Umgebungsvariable `BASE_PATH` (Standard `/`).
+- GitHub Pages kennt keine SPA-Routen; deshalb wird `index.html` als `404.html` mitkopiert, damit `/alternativen` auch beim Neuladen funktioniert.
 
 ## Projektstruktur
 
@@ -52,11 +57,10 @@ plan-b/
 │   └── src/
 │       ├── components/        # Wiederverwendbare UI-Elemente
 │       ├── pages/             # Start- und Resultatseite
+│       ├── data/              # alternatives.json (Mock-Daten)
+│       ├── lib/api.ts         # Datenzugriff (Mock-Daten, transport.opendata.ch)
 │       ├── types.ts           # Client-Typen (re-exportiert shared)
 │       └── App.tsx            # Client-Routing
-├── server/                    # Node.js + Express + TypeScript
-│   ├── data/alternatives.json # Lokale Mock-Daten
-│   └── src/index.ts           # REST-API
 ├── shared/                    # @plan-b/shared: gemeinsame Typen und Konstanten
 │   └── src/index.ts
 └── package.json               # Workspaces und gemeinsame Befehle
@@ -65,18 +69,15 @@ plan-b/
 ## Architekturübersicht
 
 ```text
-React UI → Vite-Proxy (/api) → Express API → alternatives.json
+React UI → lib/api.ts → data/alternatives.json
+                   └→ transport.opendata.ch (Haltestellen in der Nähe)
     │
     └── React Router: / und /alternativen
 ```
 
-Die Startseite übergibt die Routen- und Störungsdaten über React Router an die Resultatseite. Diese ruft `GET /api/alternatives` auf. Das Backend liefert vorerst statische JSON-Daten und kann später durch SBB-, Sharing- oder Routing-APIs ersetzt werden.
+Die Startseite übergibt die Routen- und Störungsdaten über React Router an die Resultatseite. Diese holt die Optionen über `getAlternatives()` aus `lib/api.ts`. Die Funktionen sind `async`, damit sie später durch echte SBB-, Sharing- oder Routing-APIs ersetzt werden können. Braucht eine Quelle einen geheimen API-Key, ist dafür wieder ein Server nötig (z. B. eine Serverless-Funktion).
 
-## API
-
-- `GET /api/health` – einfacher Statuscheck
-- `GET /api/alternatives?disruption=Zug%20fällt%20aus` – Störung und Optionen
-- `GET /api/stops/nearby?lat=46.949&lon=7.439` – nächstgelegene ÖV-Haltestellen
+## Daten
 
 Das Objekt `Alternative` enthält `id`, `name`, `category`, `travelTime`, `price`, `sustainabilityScore` und `providerUrl`.
 

@@ -1,4 +1,24 @@
-import type { NearbyStop } from '@plan-b/shared';
+import {
+  DISRUPTION_TYPES,
+  isDisruptionType,
+  type Alternative,
+  type AlternativesResponse,
+  type NearbyStop,
+} from '@plan-b/shared';
+import alternatives from '../data/alternatives.json';
+
+/**
+ * Datenzugriff der App. Läuft vollständig im Browser, damit die App ohne eigenen
+ * Server (z. B. auf GitHub Pages) funktioniert. Die Funktionen sind async, damit
+ * eine spätere echte API die Signaturen nicht ändern muss.
+ */
+
+export async function getAlternatives(disruption: unknown): Promise<AlternativesResponse> {
+  return {
+    disruption: isDisruptionType(disruption) ? disruption : DISRUPTION_TYPES[0],
+    alternatives: alternatives as Alternative[],
+  };
+}
 
 const OPENDATA_URL = 'https://transport.opendata.ch/v1/locations';
 
@@ -10,7 +30,7 @@ interface OpendataLocation {
 }
 
 /**
- * Sucht ÖV-Haltestellen in der Nähe über transport.opendata.ch.
+ * Sucht ÖV-Haltestellen in der Nähe über transport.opendata.ch (erlaubt CORS).
  * Achtung: Die API verwendet x für die Breite (lat) und y für die Länge (lon).
  */
 export async function findNearbyStops(lat: number, lon: number, limit = 5): Promise<NearbyStop[]> {

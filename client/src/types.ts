@@ -7,7 +7,6 @@ export type {
   Coordinates,
   DisruptionType,
   NearbyStop,
-  NearbyStopsResponse,
 } from '@plan-b/shared';
 
 export type SortMode = 'fastest' | 'cheapest' | 'sustainable';

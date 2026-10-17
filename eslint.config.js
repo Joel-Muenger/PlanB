@@ -15,7 +15,7 @@ export default tseslint.config(
     extends: [reactHooks.configs.flat['recommended-latest'], reactRefresh.configs.vite],
   },
   {
-    files: ['server/**/*.ts', '*.js', 'client/*.{js,ts}'],
+    files: ['*.js', 'client/*.{js,ts}'],
     languageOptions: { globals: globals.node },
   },
   prettier,

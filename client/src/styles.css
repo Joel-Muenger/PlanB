@@ -22,3 +22,11 @@ input,
 select {
   font: inherit;
 }
+
+/* iPhone-Vorschau: iOS blendet Scrollbalken aus, sie dürfen keine Breite belegen. */
+html.embedded {
+  scrollbar-width: none;
+}
+html.embedded::-webkit-scrollbar {
+  display: none;
+}

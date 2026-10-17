@@ -41,7 +41,7 @@ export default function RouteMap({ origin, destination, originPosition }: Props)
           <CircleMarker
             center={position}
             radius={8}
-            pathOptions={{ color: '#102A43', fillColor: '#1677C8', fillOpacity: 1, weight: 3 }}
+            pathOptions={{ color: '#102A43', fillColor: '#7F011F', fillOpacity: 1, weight: 3 }}
           >
             <Tooltip permanent direction="top">
               Du bist hier
@@ -49,7 +49,7 @@ export default function RouteMap({ origin, destination, originPosition }: Props)
           </CircleMarker>
         ) : (
           <>
-            <Polyline positions={mockRoute} pathOptions={{ color: '#1677C8', weight: 5 }} />
+            <Polyline positions={mockRoute} pathOptions={{ color: '#7F011F', weight: 5 }} />
             <CircleMarker
               center={mockRoute[0]}
               radius={8}
@@ -62,7 +62,7 @@ export default function RouteMap({ origin, destination, originPosition }: Props)
             <CircleMarker
               center={mockRoute[2]}
               radius={8}
-              pathOptions={{ color: '#1677C8', fillColor: '#1677C8', fillOpacity: 1 }}
+              pathOptions={{ color: '#7F011F', fillColor: '#7F011F', fillOpacity: 1 }}
             >
               <Tooltip permanent direction="top">
                 {destination}

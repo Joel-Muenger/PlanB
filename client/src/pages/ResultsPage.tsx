@@ -1,11 +1,12 @@
-import { AlertTriangle, ArrowLeft, LoaderCircle, MapPin, RotateCw, WifiOff } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, LoaderCircle, RotateCw, WifiOff } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DISRUPTION_TYPES } from '@plan-b/shared';
 import AlternativeCard from '../components/AlternativeCard';
 import Layout from '../components/Layout';
+import { getAlternatives } from '../lib/api';
 import RouteMap from '../components/RouteMap';
-import type { Alternative, AlternativesResponse, RouteRequest, SortMode } from '../types';
+import type { Alternative, RouteRequest, SortMode } from '../types';
 
 const filters: { id: SortMode; label: string }[] = [
   { id: 'fastest', label: 'Schnellste' },
@@ -34,19 +35,19 @@ export default function ResultsPage() {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(`/api/alternatives?disruption=${encodeURIComponent(disruption)}`, {
-      signal: controller.signal,
-    })
-      .then((r) => (r.ok ? (r.json() as Promise<AlternativesResponse>) : Promise.reject(r)))
+    let active = true;
+    getAlternatives(disruption)
       .then((data) => {
+        if (!active) return;
         setItems(data.alternatives);
         setStatus('success');
       })
       .catch(() => {
-        if (!controller.signal.aborted) setStatus('error');
+        if (active) setStatus('error');
       });
-    return () => controller.abort();
+    return () => {
+      active = false;
+    };
   }, [disruption, attempt]);
 
   const retry = () => {
@@ -60,11 +61,11 @@ export default function ResultsPage() {
     <Layout>
       <Link
         to="/"
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-wine"
       >
         <ArrowLeft size={17} /> Route ändern
       </Link>
-      <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_1.25fr]">
+      <div className="mt-5 grid grid-cols-1 gap-7 lg:grid-cols-[1fr_1.25fr]">
         <aside className="space-y-5">
           <RouteMap
             origin={origin}
@@ -85,22 +86,25 @@ export default function ResultsPage() {
           </div>
           <div className="rounded-2xl bg-white p-5 shadow-card">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Route</p>
-            <div className="mt-3 flex items-start gap-2 text-sm">
-              <MapPin size={17} className="text-brand" />
-              <span>
-                {origin}
-                <br />
-                <span className="text-slate-400">nach</span>
-                <br />
-                {destination}
-              </span>
+            <div className="mt-3 flex gap-3 text-sm">
+              {/* Routenlinie: Start als Ring, Ziel als Punkt, mittig auf die Textzeilen ausgerichtet */}
+              <div className="flex flex-col items-center py-1" aria-hidden>
+                <span className="h-3 w-3 rounded-full border-2 border-wine bg-white" />
+                <span className="w-0.5 flex-1 bg-wine" />
+                <span className="h-3 w-3 rounded-full bg-wine" />
+              </div>
+              <div>
+                <p>{origin}</p>
+                <p className="text-slate-400">nach</p>
+                <p>{destination}</p>
+              </div>
             </div>
           </div>
         </aside>
         <section>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-brand">Plan B für deine Reise</p>
+              <p className="text-sm font-semibold text-wine">Plan B für deine Reise</p>
               <h1 className="mt-1 text-3xl font-extrabold">Alternativen vergleichen</h1>
             </div>
             {status === 'success' && (
@@ -116,7 +120,7 @@ export default function ResultsPage() {
                 onClick={() => setSort(filter.id)}
                 className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition ${
                   sort === filter.id
-                    ? 'bg-ink text-white'
+                    ? 'bg-wine text-white'
                     : 'bg-white text-slate-600 shadow-sm hover:bg-slate-100'
                 }`}
               >
@@ -126,7 +130,7 @@ export default function ResultsPage() {
           </div>
           {status === 'loading' && (
             <div className="grid min-h-64 place-items-center">
-              <LoaderCircle className="animate-spin text-brand" />
+              <LoaderCircle className="animate-spin text-wine" />
             </div>
           )}
           {status === 'error' && (
@@ -139,14 +143,14 @@ export default function ResultsPage() {
               <button
                 type="button"
                 onClick={retry}
-                className="mt-2 inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+                className="mt-2 inline-flex items-center gap-2 rounded-xl bg-wine px-4 py-2.5 text-sm font-bold text-white transition hover:bg-wine/90"
               >
                 <RotateCw size={16} /> Erneut versuchen
               </button>
             </div>
           )}
           {status === 'success' && (
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {sorted.map((alternative, index) => (
                 <AlternativeCard
                   key={alternative.id}

@@ -37,7 +37,3 @@ export interface NearbyStop extends Coordinates {
   /** Distanz zur angefragten Position in Metern */
   distance: number;
 }
-
-export interface NearbyStopsResponse {
-  stops: NearbyStop[];
-}

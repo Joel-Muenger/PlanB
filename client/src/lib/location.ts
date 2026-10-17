@@ -1,4 +1,5 @@
-import type { Coordinates, NearbyStop, NearbyStopsResponse } from '../types';
+import type { Coordinates, NearbyStop } from '../types';
+import { findNearbyStops } from './api';
 
 export class LocationError extends Error {}
 
@@ -26,13 +27,9 @@ function getCurrentPosition(): Promise<Coordinates> {
 /** Ermittelt die Geräteposition und die nächstgelegene ÖV-Haltestelle. */
 export async function locateNearestStop(): Promise<{ position: Coordinates; stop: NearbyStop }> {
   const position = await getCurrentPosition();
-  const response = await fetch(`/api/stops/nearby?lat=${position.lat}&lon=${position.lon}`).catch(
-    () => null,
-  );
-  if (!response?.ok) {
+  const stops = await findNearbyStops(position.lat, position.lon).catch(() => {
     throw new LocationError('Haltestellensuche ist momentan nicht verfügbar.');
-  }
-  const { stops } = (await response.json()) as NearbyStopsResponse;
+  });
   if (stops.length === 0) {
     throw new LocationError('Keine Haltestelle in deiner Nähe gefunden.');
   }

@@ -2,7 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Auf GitHub Pages läuft die App unter /<repo>/; der Workflow setzt BASE_PATH entsprechend.
+const base = process.env.BASE_PATH ?? '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -13,10 +17,11 @@ export default defineConfig({
         short_name: 'Plan B',
         description: 'Mobilitätsalternativen bei ÖV-Störungen in der Region Bern',
         lang: 'de-CH',
-        start_url: '/',
+        start_url: '.',
+        scope: '.',
         display: 'standalone',
         theme_color: '#102A43',
-        background_color: '#E8F5FF',
+        background_color: '#F5EBD0',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
@@ -29,11 +34,7 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        // API-Antworten nie aus dem Cache liefern, damit Störungsdaten aktuell bleiben.
-        navigateFallbackDenylist: [/^\/api\//],
-      },
     }),
   ],
-  server: { port: 5173, proxy: { '/api': 'http://localhost:3001' } },
+  server: { port: 5173 },
 });

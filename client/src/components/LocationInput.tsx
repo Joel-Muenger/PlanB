@@ -27,8 +27,8 @@ export default function LocationInput({
       <label htmlFor={id} className="mb-2 block text-sm font-semibold">
         {label}
       </label>
-      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white py-1 pl-4 pr-1 focus-within:border-brand focus-within:ring-2 focus-within:ring-blue-100">
-        <MapPin size={19} className="shrink-0 text-brand" />
+      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white py-1 pl-4 pr-1 focus-within:border-wine focus-within:ring-2 focus-within:ring-wine/15">
+        <MapPin size={19} className="shrink-0 text-wine" />
         <input
           id={id}
           value={value}
