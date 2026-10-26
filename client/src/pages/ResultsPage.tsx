@@ -4,6 +4,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { DISRUPTION_TYPES } from '@plan-b/shared';
 import AlternativeCard from '../components/AlternativeCard';
 import Layout from '../components/Layout';
+import LiveConnections from '../components/LiveConnections';
+import { pickBest, sortAlternatives } from '../lib/alternatives';
 import { getAlternatives } from '../lib/api';
 import RouteMap from '../components/RouteMap';
 import type { Alternative, RouteRequest, SortMode } from '../types';
@@ -14,12 +16,6 @@ const filters: { id: SortMode; label: string }[] = [
   { id: 'sustainable', label: 'Nachhaltigste' },
 ];
 
-const compare: Record<SortMode, (a: Alternative, b: Alternative) => number> = {
-  fastest: (a, b) => a.travelTime - b.travelTime,
-  cheapest: (a, b) => a.price - b.price,
-  sustainable: (a, b) => b.sustainabilityScore - a.sustainabilityScore,
-};
-
 type Status = 'loading' | 'success' | 'error';
 
 export default function ResultsPage() {
@@ -28,6 +24,7 @@ export default function ResultsPage() {
   const origin = state?.origin || 'Bern Bahnhof';
   const destination = state?.destination || 'Wankdorf Bahnhof';
   const disruption = state?.disruption || DISRUPTION_TYPES[0];
+  const originPosition = state?.originPosition;
 
   const [items, setItems] = useState<Alternative[]>([]);
   const [status, setStatus] = useState<Status>('loading');
@@ -36,7 +33,7 @@ export default function ResultsPage() {
 
   useEffect(() => {
     let active = true;
-    getAlternatives(disruption)
+    getAlternatives(disruption, originPosition)
       .then((data) => {
         if (!active) return;
         setItems(data.alternatives);
@@ -48,14 +45,15 @@ export default function ResultsPage() {
     return () => {
       active = false;
     };
-  }, [disruption, attempt]);
+  }, [disruption, originPosition, attempt]);
 
   const retry = () => {
     setStatus('loading');
     setAttempt((n) => n + 1);
   };
 
-  const sorted = useMemo(() => [...items].sort(compare[sort]), [items, sort]);
+  const sorted = useMemo(() => sortAlternatives(items, sort), [items, sort]);
+  const bestId = pickBest(sorted);
 
   return (
     <Layout>
@@ -84,6 +82,7 @@ export default function ResultsPage() {
               </div>
             </div>
           </div>
+          <LiveConnections from={origin} to={destination} />
           <div className="rounded-2xl bg-white p-5 shadow-card">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Route</p>
             <div className="mt-3 flex gap-3 text-sm">
@@ -151,18 +150,18 @@ export default function ResultsPage() {
           )}
           {status === 'success' && (
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {sorted.map((alternative, index) => (
+              {sorted.map((alternative) => (
                 <AlternativeCard
                   key={alternative.id}
                   alternative={alternative}
-                  featured={index === 0}
+                  featured={alternative.id === bestId}
                 />
               ))}
             </div>
           )}
           <p className="mt-5 text-center text-xs leading-relaxed text-slate-400">
-            Plan B vermittelt nur an externe Anbieter. Preise und Zeiten sind Schätzwerte für diesen
-            Prototyp.
+            Plan B vermittelt nur an externe Anbieter. Preise, Zeiten, Anbieterstatus und
+            Kapazitäten sind Demo-Daten dieses Prototyps; die Verbindungen oben sind live.
           </p>
         </section>
       </div>

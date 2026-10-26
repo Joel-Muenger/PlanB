@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import StationMap from '../components/StationMap';
-import { getBikeStations } from '../lib/api';
+import { BERN_BAHNHOF, getBikeStations } from '../lib/api';
 import {
   availabilityColors,
   availabilityLabels,
@@ -13,10 +13,7 @@ import {
   stationAvailability,
   type BikeType,
 } from '../lib/stations';
-import type { BikeStation, Coordinates, RouteRequest } from '../types';
-
-/** Bezugspunkt für Distanzen, wenn der Startort nicht geortet wurde. */
-const BERN_BAHNHOF: Coordinates = { lat: 46.9486, lon: 7.4396 };
+import type { BikeStation, RouteRequest } from '../types';
 
 const typeFilters: { id: BikeType; label: string }[] = [
   { id: 'all', label: 'Alle' },

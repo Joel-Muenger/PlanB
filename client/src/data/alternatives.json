@@ -6,16 +6,34 @@
     "travelTime": 32,
     "price": 0,
     "sustainabilityScore": 10,
-    "providerUrl": "https://www.sbb.ch"
+    "providerUrl": "https://www.sbb.ch",
+    "status": "available",
+    "capacity": {
+      "kind": "occupancy",
+      "level": "high"
+    },
+    "statusByDisruption": {
+      "Streckensperrung": {
+        "status": "unavailable",
+        "statusNote": "Strecke via Ostermundigen ebenfalls gesperrt"
+      }
+    }
   },
   {
     "id": "taxi-1",
-    "name": "Taxi Bern",
+    "name": "Bären Taxi",
     "category": "taxi",
     "travelTime": 18,
     "price": 42,
     "sustainabilityScore": 2,
-    "providerUrl": "https://www.baerentaxi.ch"
+    "providerUrl": "https://www.baerentaxi.ch",
+    "status": "limited",
+    "statusNote": "Hohe Nachfrage wegen Störung",
+    "capacity": {
+      "kind": "vehicles",
+      "available": 3,
+      "waitMinutes": 12
+    }
   },
   {
     "id": "bike-1",
@@ -24,7 +42,8 @@
     "travelTime": 25,
     "price": 7,
     "sustainabilityScore": 9,
-    "providerUrl": "https://www.publibike.ch"
+    "providerUrl": "https://www.publibike.ch",
+    "status": "available"
   },
   {
     "id": "car-1",
@@ -33,6 +52,11 @@
     "travelTime": 22,
     "price": 15,
     "sustainabilityScore": 6,
-    "providerUrl": "https://www.mobility.ch"
+    "providerUrl": "https://www.mobility.ch",
+    "status": "available",
+    "capacity": {
+      "kind": "vehicles",
+      "available": 2
+    }
   }
 ]

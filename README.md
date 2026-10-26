@@ -7,6 +7,8 @@ Plan B bündelt bei ÖV-Störungen exemplarische Mobilitätsalternativen für Pe
 - Eingabe von Start und Ziel, inklusive simulierten Störungstypen
 - Alternativzug, Taxi, PubliBike und Carsharing aus lokalen Mock-Daten
 - Sortierung nach schnellster, günstigster oder nachhaltigster Option
+- Anbieterstatus (verfügbar/eingeschränkt/nicht verfügbar) und Kapazität je Anbieter (Demo-Daten)
+- Nächste Verbindungen mit Echtzeit-Verspätung (transport.opendata.ch)
 - Anbieter-Links als externe Weiterleitung
 - Responsive, mobile-first Oberfläche in Wine Red und Light Sand, mit Web-/iPhone-Ansicht
 - OpenStreetMap/Leaflet-Karte mit Mock-Route in Bern

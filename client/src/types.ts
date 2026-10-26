@@ -4,9 +4,11 @@ export type {
   Alternative,
   AlternativeCategory,
   AlternativesResponse,
+  Capacity,
   Coordinates,
   DisruptionType,
   NearbyStop,
+  ProviderStatus,
 } from '@plan-b/shared';
 
 export type SortMode = 'fastest' | 'cheapest' | 'sustainable';

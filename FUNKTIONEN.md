@@ -12,9 +12,12 @@ Plan B zeigt bei ÖV-Störungen in der Region Bern passende Alternativen und lei
 
 ## Resultatseite – Alternativen vergleichen
 
-- Vier Alternativen: Alternativzug, Taxi (Bären Taxi), PubliBike, Mobility Carsharing
+- Vier Alternativen: Alternativzug, Bären Taxi, PubliBike, Mobility Carsharing
 - Pro Option: Reisezeit, Kosten, Nachhaltigkeitswert (x/10) und Button **„Zum Anbieter“**
-- Sortierung nach **schnellste**, **günstigste** oder **nachhaltigste** Option; die beste ist als „Beste Wahl“ markiert
+- **Anbieterstatus:** verfügbar / eingeschränkt / nicht verfügbar, mit Hinweis (z. B. „Hohe Nachfrage wegen Störung“); hängt auch von der gewählten Störung ab
+- **Kapazität:** freie Taxis mit Wartezeit, freie Velos an Stationen in der Nähe (aus denselben Daten wie die Stationssuche), Autos in der Nähe, Zugauslastung; ohne freie Fahrzeuge gilt ein Angebot als nicht verfügbar
+- Sortierung nach **schnellste**, **günstigste** oder **nachhaltigste** Option; nicht verfügbare Angebote stehen immer am Ende, „Beste Wahl“ ist die beste nutzbare Option
+- **Nächste Verbindungen live:** echte Abfahrten Start → Ziel mit Linie, Gleis, Umstiegen und Verspätung (transport.opendata.ch)
 - Karte (OpenStreetMap) mit Strecke bzw. eigenem Standort
 - Störungsmeldung und Routenübersicht (Start → Ziel)
 
@@ -40,10 +43,11 @@ Erreichbar über die Lupe auf der PubliBike-Karte.
 
 - React, TypeScript, Tailwind, Leaflet; läuft komplett im Browser, ohne eigenen Server
 - Hosting auf GitHub Pages; jeder Push auf `main` wird automatisch geprüft (Typecheck, Tests, Lint) und veröffentlicht
-- Datenquellen: Demo-Daten im Projekt, Haltestellen live von transport.opendata.ch
+- Datenquellen: Demo-Daten im Projekt; Haltestellen und Verbindungen mit Verspätung live von transport.opendata.ch
 
 ## Noch nicht enthalten
 
-- Echte Fahrplan- und Störungsdaten, echte Velo-Verfügbarkeit
-- Start, Ziel und Störungstyp beeinflussen die vorgeschlagenen Alternativen noch nicht
+- Echte Störungsmeldungen (SIRI-SX, braucht API-Key und Server), echte Velo-Verfügbarkeit
+- Anbieterportal, in dem Anbieter wie Bären Taxi ihren Status selbst melden
+- Start und Ziel beeinflussen die vorgeschlagenen Alternativen noch nicht (der Störungstyp nur den Anbieterstatus)
 - Buchung, Bezahlung, Login
