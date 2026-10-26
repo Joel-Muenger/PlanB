@@ -20,7 +20,11 @@ interface Props {
   className?: string;
 }
 
-/** Schwenkt zur gewählten Station und öffnet ihr Popup. */
+/**
+ * Schwenkt zur gewählten Station und öffnet ihr Popup. Auf dem Handy wird die Karte
+ * im selben Moment eingeblendet; solange Leaflet sie noch als 0 × 0 kennt, ergäbe
+ * ein Flug NaN-Koordinaten. Dann warten wir auf das resize-Ereignis (TrackSize).
+ */
 function FocusSelected({
   station,
   markers,
@@ -31,8 +35,32 @@ function FocusSelected({
   const map = useMap();
   useEffect(() => {
     if (!station) return;
-    map.flyTo([station.lat, station.lon], Math.max(map.getZoom(), 15), { duration: 0.6 });
-    markers.get(station.id)?.openPopup();
+    const target: [number, number] = [station.lat, station.lon];
+    const zoom = Math.max(map.getZoom(), 15);
+    const hasSize = () => {
+      const size = map.getSize();
+      return size.x > 0 && size.y > 0;
+    };
+    const focus = (animate: boolean) => {
+      if (animate) map.flyTo(target, zoom, { duration: 0.6 });
+      else map.setView(target, zoom, { animate: false });
+      markers.get(station.id)?.openPopup();
+    };
+
+    map.invalidateSize();
+    if (hasSize()) {
+      focus(true);
+      return;
+    }
+    const onResize = () => {
+      if (!hasSize()) return;
+      map.off('resize', onResize);
+      focus(false);
+    };
+    map.on('resize', onResize);
+    return () => {
+      map.off('resize', onResize);
+    };
   }, [map, station, markers]);
   return null;
 }
