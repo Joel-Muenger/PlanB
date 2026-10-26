@@ -46,3 +46,13 @@ export function isAllowedOrigin(origin: string | null, allowed: string): boolean
 /** ÖV-Haltestellen-ID (DiDok/BPUIC, z. B. 8507000) – verhindert beliebige Eingaben an OJP. */
 export const isStopId = (value: string | null): value is string =>
   !!value && /^\d{6,9}$/.test(value);
+
+/**
+ * Wandelt eine Schweizer Haltestellennummer (BPUIC/DiDok, z. B. 8516161) in die SLOID,
+ * die OJP 1.0 erwartet (ch:1:sloid:16161): Ländercode 85 weg, führende Nullen weg.
+ * Ausländische Nummern bleiben unverändert.
+ */
+export function toSloid(stopId: string): string {
+  const match = /^85(\d{5})$/.exec(stopId);
+  return match ? `ch:1:sloid:${Number(match[1])}` : stopId;
+}

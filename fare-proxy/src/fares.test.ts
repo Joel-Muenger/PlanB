@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FareDeliverySchema } from 'ojp-shared-types';
-import { isAllowedOrigin, isStopId, summarizeFare } from './fares';
+import { isAllowedOrigin, isStopId, summarizeFare, toSloid } from './fares';
 
 const product = (name: string, price?: string) => ({
   fareProductId: name,
@@ -65,5 +65,16 @@ describe('isStopId', () => {
     expect(isStopId('Bern')).toBe(false);
     expect(isStopId('8507000; drop')).toBe(false);
     expect(isStopId(null)).toBe(false);
+  });
+});
+
+describe('toSloid', () => {
+  it('wandelt Schweizer Haltestellennummern in SLOIDs um', () => {
+    expect(toSloid('8507000')).toBe('ch:1:sloid:7000');
+    expect(toSloid('8516161')).toBe('ch:1:sloid:16161');
+    expect(toSloid('8576646')).toBe('ch:1:sloid:76646');
+  });
+  it('lässt andere Nummern unverändert', () => {
+    expect(toSloid('8000105')).toBe('8000105');
   });
 });

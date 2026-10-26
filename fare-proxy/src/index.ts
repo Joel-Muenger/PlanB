@@ -1,5 +1,5 @@
 import * as OJP from 'ojp-sdk-next';
-import { isAllowedOrigin, isStopId, summarizeFare, type FareSummary } from './fares';
+import { isAllowedOrigin, isStopId, summarizeFare, toSloid, type FareSummary } from './fares';
 
 /**
  * Plan-B-Preisproxy: nimmt Start-/Ziel-Haltestelle und Abfahrtszeit entgegen, sucht
@@ -12,8 +12,10 @@ export interface Env {
   ALLOWED_ORIGINS: string;
 }
 
-// OJP Fare gibt es nur für OJP 1.0 (Stand ojp-sdk-next 0.21).
+// Verbindungssuche über OJP 1.0; Preise über den eigenen OJP-Fare-Endpoint (Beta, ebenfalls
+// OJP-1.0-XML). Der Fahrplan-Endpoint selbst lehnt FareRequests mit 400 ab.
 const OJP_V1_URL = 'https://api.opentransportdata.swiss/ojp2020';
+const OJP_FARE_URL = 'https://api.opentransportdata.swiss/ojpfare/';
 const REQUESTOR_REF = 'PlanB_Prototyp_v1';
 const CACHE_SECONDS = 600;
 
@@ -27,9 +29,14 @@ interface OjpRequest<T> {
  * Schickt eine SDK-Anfrage per fetch statt über das axios des SDK (in Workers nicht
  * zuverlässig) und lässt das SDK die Antwort auslesen.
  */
-async function send<T>(request: OjpRequest<T>, sdk: OJP.AnySDK, apiKey: string): Promise<T> {
+async function send<T>(
+  request: OjpRequest<T>,
+  sdk: OJP.AnySDK,
+  apiKey: string,
+  url = OJP_V1_URL,
+): Promise<T> {
   const xml = request.buildRequestXML('de', REQUESTOR_REF, OJP.XML_BuilderConfigOJPv1 as never);
-  const response = await fetch(OJP_V1_URL, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
@@ -39,7 +46,10 @@ async function send<T>(request: OjpRequest<T>, sdk: OJP.AnySDK, apiKey: string):
     body: xml,
     signal: AbortSignal.timeout(8000),
   });
-  if (!response.ok) throw new Error(`OJP antwortete mit ${response.status}`);
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    throw new Error(`OJP antwortete mit ${response.status}: ${detail}`);
+  }
   request.mockResponseXML = await response.text();
   return request.fetchResponse(sdk);
 }
@@ -52,13 +62,25 @@ async function lookupFares(
 ): Promise<{ full: FareSummary; halfFare: FareSummary } | null> {
   const sdk = OJP.SDK.v1(REQUESTOR_REF, { url: OJP_V1_URL, authToken: null }, 'de');
 
-  const tripRequest = sdk.requests.TripRequest.initWithPlaceRefsOrCoords(from, to);
+  // OJP 1.0 kennt Haltestellen nur noch als SLOID (z. B. ch:1:sloid:16161).
+  const tripRequest = sdk.requests.TripRequest.initWithPlaceRefsOrCoords(
+    toSloid(from),
+    toSloid(to),
+  );
   tripRequest.setDepartureDatetime(departure);
   tripRequest.setNumberOfResults(1);
   const trips = await send(tripRequest, sdk, apiKey);
   if (!trips.ok) throw trips.error;
   const trip = trips.value.tripResult?.[0]?.trip;
-  if (!trip) return null;
+  // Diagnose (wrangler tail): Fand OJP eine Verbindung?
+  console.log('Verbindungssuche:', {
+    tripResults: trips.value.tripResult?.length ?? 0,
+    legs: trip?.tripLeg.length ?? 0,
+  });
+  if (!trip) {
+    console.log('Antwort Verbindungssuche:', tripRequest.mockResponseXML?.slice(0, 800));
+    return null;
+  }
 
   // Standardparameter des SDK: Erwachsen, 2. Klasse, mit Halbtax.
   const halfFareRequest = sdk.requests.FareRequest.initWithOJPv1Trips([structuredClone(trip)]);
@@ -68,13 +90,28 @@ async function lookupFares(
   }
 
   const [full, halfFare] = await Promise.all([
-    send(fullRequest, sdk, apiKey),
-    send(halfFareRequest, sdk, apiKey),
+    send(fullRequest, sdk, apiKey, OJP_FARE_URL),
+    send(halfFareRequest, sdk, apiKey, OJP_FARE_URL),
   ]);
   if (!full.ok) throw full.error;
   if (!halfFare.ok) throw halfFare.error;
   const fullSummary = summarizeFare(full.value);
   const halfSummary = summarizeFare(halfFare.value);
+  // Diagnose (wrangler tail): Wie sieht die Preisantwort aus?
+  for (const [label, request, response, summary] of [
+    ['Vollpreis', fullRequest, full.value, fullSummary],
+    ['Halbtax', halfFareRequest, halfFare.value, halfSummary],
+  ] as const) {
+    console.log(`Preisabfrage ${label}:`, {
+      fareResults: response.fareResult?.length ?? 0,
+      sections: response.fareResult?.[0]?.tripFareResult?.length ?? 0,
+      products: response.fareResult?.[0]?.tripFareResult?.flatMap((s) =>
+        s.fareProduct.map((p) => `${p.fareProductName}: ${p.price ?? '–'}`),
+      ),
+      summary,
+    });
+    if (!summary) console.log(`Antwort ${label}:`, request.mockResponseXML?.slice(0, 800));
+  }
   return fullSummary && halfSummary ? { full: fullSummary, halfFare: halfSummary } : null;
 }
 
