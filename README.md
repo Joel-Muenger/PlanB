@@ -10,6 +10,7 @@ Plan B bündelt bei ÖV-Störungen exemplarische Mobilitätsalternativen für Pe
 - Anbieter-Links als externe Weiterleitung
 - Responsive, mobile-first Oberfläche in Wine Red und Light Sand, mit Web-/iPhone-Ansicht
 - OpenStreetMap/Leaflet-Karte mit Mock-Route in Bern
+- PubliBike-Stationssuche (Lupe auf der Velo-Karte): Suche, Filter, Liste nach Distanz und Karte mit Verfügbarkeit (Demo-Daten)
 - „Standort“-Button: ermittelt die nächste ÖV-Haltestelle zur Geräteposition (via transport.opendata.ch)
 - Installierbar als Progressive Web App (Homescreen-Icon, Vollbild)
 
@@ -31,6 +32,7 @@ Qualitätsprüfungen:
 
 ```bash
 npm run typecheck
+npm test
 npm run lint
 npm run format:check   # bzw. npm run format zum Formatieren
 ```

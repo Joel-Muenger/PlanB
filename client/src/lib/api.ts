@@ -6,6 +6,8 @@ import {
   type NearbyStop,
 } from '@plan-b/shared';
 import alternatives from '../data/alternatives.json';
+import bikeStations from '../data/bikeStations.json';
+import type { BikeStation } from '../types';
 
 /**
  * Datenzugriff der App. Läuft vollständig im Browser, damit die App ohne eigenen
@@ -18,6 +20,11 @@ export async function getAlternatives(disruption: unknown): Promise<Alternatives
     disruption: isDisruptionType(disruption) ? disruption : DISRUPTION_TYPES[0],
     alternatives: alternatives as Alternative[],
   };
+}
+
+/** PubliBike-Stationen in Bern. Demo-Daten; Live-Quelle wäre der GBFS-Feed von sharedmobility.ch. */
+export async function getBikeStations(): Promise<BikeStation[]> {
+  return bikeStations as BikeStation[];
 }
 
 const OPENDATA_URL = 'https://transport.opendata.ch/v1/locations';

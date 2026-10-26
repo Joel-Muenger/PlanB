@@ -1,4 +1,5 @@
-import { Bike, Car, ExternalLink, Leaf, Train, Wallet, Zap } from 'lucide-react';
+import { Bike, Car, ExternalLink, Leaf, Search, Train, Wallet, Zap } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import type { Alternative, AlternativeCategory } from '../types';
 const icons: Record<AlternativeCategory, typeof Train> = {
   train: Train,
@@ -20,6 +21,7 @@ export default function AlternativeCard({
   featured?: boolean;
 }) {
   const Icon = icons[alternative.category];
+  const location = useLocation();
   return (
     <article
       className={`relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-card ${featured ? 'border-wine ring-1 ring-wine' : 'border-slate-100'}`}
@@ -46,6 +48,17 @@ export default function AlternativeCard({
             </span>
           </p>
         </div>
+        {alternative.category === 'bike' && (
+          <Link
+            to="/stationen"
+            state={location.state}
+            aria-label="Stationen in der Nähe suchen"
+            title="Stationen in der Nähe suchen"
+            className="ml-auto grid h-10 w-10 shrink-0 place-items-center self-start rounded-full bg-wine/5 text-wine transition hover:bg-wine hover:text-white"
+          >
+            <Search size={18} />
+          </Link>
+        )}
       </div>
       <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
         <div className="rounded-xl bg-slate-50 p-3">

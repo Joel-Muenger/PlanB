@@ -12,11 +12,12 @@ npm run dev                 # baut shared, dann shared (tsc --watch) + Vite (:51
 npm run build               # shared → client/dist (BASE_PATH=/repo/ für GitHub Pages)
 npm start                   # vite preview des Builds (:4173)
 npm run typecheck           # baut shared, dann tsc --noEmit für client
+npm test                    # Vitest (client/src/**/*.test.ts)
 npm run lint                # ESLint (flat config, typescript-eslint, react-hooks)
 npm run format              # Prettier (format:check zum reinen Prüfen)
 ```
 
-Nach Änderungen immer `npm run typecheck`, `npm run lint` und `npm run format:check` ausführen. Tests gibt es noch nicht.
+Nach Änderungen immer `npm run typecheck`, `npm test`, `npm run lint` und `npm run format:check` ausführen. Logik in `client/src/lib/` bekommt Vitest-Tests.
 
 ## Architektur
 
@@ -33,7 +34,8 @@ Die App ist eine **PWA** (vite-plugin-pwa, `registerType: 'autoUpdate'`): Manife
   - `pages/HomePage.tsx` – Formular (Start, Ziel, simulierte Störung), navigiert mit `navigate('/alternativen', { state })`. Der Button „Standort“ im Startfeld ermittelt die Geräteposition und setzt die nächste ÖV-Haltestelle ein (`lib/location.ts`).
   - `pages/ResultsPage.tsx` – liest den Router-State, holt die Optionen über `getAlternatives()` aus `lib/api.ts`, sortiert clientseitig (schnellste/günstigste/nachhaltigste).
   - `components/` – `Layout`, `LocationInput`, `DisruptionSelect`, `AlternativeCard`, `RouteMap` (echte Position, falls geortet, sonst fest kodierte Mock-Route; OSM-Kacheln), `ViewModeToggle` und `PhonePreview` (Web-/iPhone-Ansicht; die App läuft dafür in einem iframe, `lib/viewMode.ts`).
-  - `lib/api.ts` – `getAlternatives()` (Mock-Daten aus `data/alternatives.json`) und `findNearbyStops()` (transport.opendata.ch; bis zu 5 Haltestellen). Achtung: transport.opendata.ch verwendet `x` = Breite, `y` = Länge; Einträge ohne `id` sind Adressen und werden verworfen.
+  - `pages/StationsPage.tsx` (`/stationen`) – PubliBike-Stationen: Suche (Name/Adresse), Filter E-Bikes/mech. Velos/nur verfügbare, Liste nach Distanz ab Startort (sonst Bern Bahnhof), Karte `components/StationMap.tsx` mit Markern nach Verfügbarkeit. Einstieg über die Lupe auf der Velo-Karte. Demo-Daten in `data/bikeStations.json` (Typ `BikeStation`, GBFS-nah); Logik in `lib/stations.ts`.
+  - `lib/api.ts` – `getBikeStations()`, `getAlternatives()` (Mock-Daten aus `data/alternatives.json`) und `findNearbyStops()` (transport.opendata.ch; bis zu 5 Haltestellen). Achtung: transport.opendata.ch verwendet `x` = Breite, `y` = Länge; Einträge ohne `id` sind Adressen und werden verworfen.
 - **shared/** (`@plan-b/shared`): einzige Quelle für API-Typen (`Alternative`, `AlternativeCategory`, `DisruptionType`, `AlternativesResponse`) und Konstanten (`DISRUPTION_TYPES`, `isDisruptionType`). Wird mit `tsc` nach `shared/dist` gebaut; `exports` zeigt auf `dist`. Der Client importiert aus `@plan-b/shared`. Nach einem frischen Clone ohne `npm run dev`/`build`/`typecheck` fehlen deshalb die Typen, bis `npm run build -w shared` gelaufen ist.
   - `client/src/types.ts` re-exportiert die geteilten Typen und enthält nur Client-eigene Typen (`SortMode`, `RouteRequest`).
 

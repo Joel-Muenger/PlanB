@@ -1,0 +1,178 @@
+[
+  {
+    "id": "pb-101",
+    "name": "Bern Bahnhof (Welle)",
+    "address": "Bahnhofplatz, 3011 Bern",
+    "lat": 46.9486,
+    "lon": 7.4396,
+    "capacity": 30,
+    "ebikes": 6,
+    "bikes": 9,
+    "isRenting": true
+  },
+  {
+    "id": "pb-102",
+    "name": "Bubenbergplatz",
+    "address": "Bubenbergplatz 8, 3011 Bern",
+    "lat": 46.9477,
+    "lon": 7.4407,
+    "capacity": 20,
+    "ebikes": 2,
+    "bikes": 1,
+    "isRenting": true
+  },
+  {
+    "id": "pb-103",
+    "name": "Bundesplatz",
+    "address": "Bundesplatz 3, 3011 Bern",
+    "lat": 46.9467,
+    "lon": 7.4442,
+    "capacity": 16,
+    "ebikes": 4,
+    "bikes": 5,
+    "isRenting": true
+  },
+  {
+    "id": "pb-104",
+    "name": "Zytglogge",
+    "address": "Kramgasse 2, 3011 Bern",
+    "lat": 46.9479,
+    "lon": 7.4476,
+    "capacity": 12,
+    "ebikes": 1,
+    "bikes": 0,
+    "isRenting": true
+  },
+  {
+    "id": "pb-105",
+    "name": "Kornhausplatz",
+    "address": "Kornhausplatz 18, 3011 Bern",
+    "lat": 46.9489,
+    "lon": 7.4466,
+    "capacity": 14,
+    "ebikes": 0,
+    "bikes": 0,
+    "isRenting": true
+  },
+  {
+    "id": "pb-106",
+    "name": "Bärenpark",
+    "address": "Grosser Muristalden 6, 3006 Bern",
+    "lat": 46.9479,
+    "lon": 7.4597,
+    "capacity": 12,
+    "ebikes": 3,
+    "bikes": 4,
+    "isRenting": true
+  },
+  {
+    "id": "pb-107",
+    "name": "Universität Hauptgebäude",
+    "address": "Hochschulstrasse 4, 3012 Bern",
+    "lat": 46.9506,
+    "lon": 7.4381,
+    "capacity": 18,
+    "ebikes": 5,
+    "bikes": 7,
+    "isRenting": true
+  },
+  {
+    "id": "pb-108",
+    "name": "Länggasse Mittelstrasse",
+    "address": "Mittelstrasse 43, 3012 Bern",
+    "lat": 46.9545,
+    "lon": 7.4318,
+    "capacity": 12,
+    "ebikes": 0,
+    "bikes": 2,
+    "isRenting": true
+  },
+  {
+    "id": "pb-109",
+    "name": "Inselspital",
+    "address": "Freiburgstrasse 18, 3010 Bern",
+    "lat": 46.9471,
+    "lon": 7.4246,
+    "capacity": 20,
+    "ebikes": 7,
+    "bikes": 3,
+    "isRenting": true
+  },
+  {
+    "id": "pb-110",
+    "name": "Eigerplatz",
+    "address": "Eigerplatz 5, 3007 Bern",
+    "lat": 46.9389,
+    "lon": 7.4281,
+    "capacity": 12,
+    "ebikes": 2,
+    "bikes": 6,
+    "isRenting": true
+  },
+  {
+    "id": "pb-111",
+    "name": "Marzili",
+    "address": "Marzilistrasse 29, 3005 Bern",
+    "lat": 46.9441,
+    "lon": 7.4431,
+    "capacity": 10,
+    "ebikes": 0,
+    "bikes": 0,
+    "isRenting": false
+  },
+  {
+    "id": "pb-112",
+    "name": "Helvetiaplatz",
+    "address": "Helvetiaplatz 1, 3005 Bern",
+    "lat": 46.9433,
+    "lon": 7.4496,
+    "capacity": 14,
+    "ebikes": 3,
+    "bikes": 2,
+    "isRenting": true
+  },
+  {
+    "id": "pb-113",
+    "name": "Viktoriaplatz",
+    "address": "Viktoriaplatz 2, 3013 Bern",
+    "lat": 46.9554,
+    "lon": 7.4526,
+    "capacity": 14,
+    "ebikes": 4,
+    "bikes": 6,
+    "isRenting": true
+  },
+  {
+    "id": "pb-114",
+    "name": "Breitenrainplatz",
+    "address": "Breitenrainplatz 27, 3014 Bern",
+    "lat": 46.9603,
+    "lon": 7.4516,
+    "capacity": 16,
+    "ebikes": 2,
+    "bikes": 8,
+    "isRenting": true
+  },
+  {
+    "id": "pb-115",
+    "name": "Wankdorf Bahnhof",
+    "address": "Morgenstrasse 2, 3014 Bern",
+    "lat": 46.9672,
+    "lon": 7.4658,
+    "capacity": 24,
+    "ebikes": 8,
+    "bikes": 10,
+    "isRenting": true
+  },
+  {
+    "id": "pb-116",
+    "name": "Ostermundigen Bahnhof",
+    "address": "Bahnhofstrasse 2, 3072 Ostermundigen",
+    "lat": 46.9561,
+    "lon": 7.4873,
+    "capacity": 16,
+    "ebikes": 1,
+    "bikes": 0,
+    "isRenting": true
+  }
+]
