@@ -18,6 +18,7 @@ Plan B zeigt bei ÖV-Störungen in der Region Bern passende Alternativen und lei
 - **Kapazität:** freie Taxis mit Wartezeit, freie Velos an Stationen in der Nähe (aus denselben Daten wie die Stationssuche), Autos in der Nähe, Zugauslastung; ohne freie Fahrzeuge gilt ein Angebot als nicht verfügbar
 - Sortierung nach **schnellste**, **günstigste** oder **nachhaltigste** Option; nicht verfügbare Angebote stehen immer am Ende, „Beste Wahl“ ist die beste nutzbare Option
 - **Nächste Verbindungen live:** echte Abfahrten Start → Ziel mit Linie, Gleis, Umstiegen und Verspätung (transport.opendata.ch)
+- **Echter Billettpreis:** Einzelbillett 2. Klasse, Vollpreis und mit Halbtax, inkl. Libero-Verbund für Bernmobil (OJP Fare/NOVA, Beta; über einen eigenen Preisproxy)
 - Karte (OpenStreetMap) mit Strecke bzw. eigenem Standort
 - Störungsmeldung und Routenübersicht (Start → Ziel)
 
@@ -41,7 +42,7 @@ Erreichbar über die Lupe auf der PubliBike-Karte.
 
 ## Technik in Kürze
 
-- React, TypeScript, Tailwind, Leaflet; läuft komplett im Browser, ohne eigenen Server
+- React, TypeScript, Tailwind, Leaflet; läuft im Browser, nur für Preise gibt es einen kleinen Cloudflare-Worker, der den API-Key geheim hält
 - Hosting auf GitHub Pages; jeder Push auf `main` wird automatisch geprüft (Typecheck, Tests, Lint) und veröffentlicht
 - Datenquellen: Demo-Daten im Projekt; Haltestellen und Verbindungen mit Verspätung live von transport.opendata.ch
 

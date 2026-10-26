@@ -99,14 +99,22 @@ export interface LiveConnection {
   delay: number | null;
   platform: string | null;
   transfers: number;
+  /** Haltestellen-IDs (für die Preisabfrage) */
+  fromId: string;
+  toId: string;
 }
 
 interface OpendataConnection {
   products: string[];
   sections: { journey: { category: string; number: string } | null }[];
   transfers: number;
-  from: { departure: string; delay: number | null; platform: string | null };
-  to: { arrival: string };
+  from: {
+    departure: string;
+    delay: number | null;
+    platform: string | null;
+    station: { id: string };
+  };
+  to: { arrival: string; station: { id: string } };
 }
 
 // Kategorien von transport.opendata.ch, die ohne Bezeichnung nur als Nummer erscheinen.
@@ -145,5 +153,41 @@ export async function getConnections(
     delay: c.from.delay,
     platform: c.from.platform,
     transfers: c.transfers,
+    fromId: c.from.station.id,
+    toId: c.to.station.id,
   }));
+}
+
+export interface FareSummary {
+  price: number;
+  currency: string;
+  products: string[];
+}
+
+export interface Fares {
+  full: FareSummary;
+  halfFare: FareSummary;
+}
+
+/**
+ * Echter Billettpreis (2. Klasse, Vollpreis und Halbtax) über den Preisproxy
+ * (fare-proxy, OJP Fare/NOVA). Ohne konfigurierten Proxy oder bei Fehlern null –
+ * die App zeigt dann keinen Preis statt eines falschen.
+ */
+export async function getFares(
+  fromId: string,
+  toId: string,
+  departure: string,
+): Promise<Fares | null> {
+  const base = import.meta.env.VITE_FARE_API_URL;
+  if (!base) return null;
+  const params = new URLSearchParams({ from: fromId, to: toId, departure });
+  try {
+    const response = await fetch(`${base.replace(/\/$/, '')}/fare?${params}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    return response.ok ? ((await response.json()) as Fares) : null;
+  } catch {
+    return null;
+  }
 }

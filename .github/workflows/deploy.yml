@@ -32,6 +32,8 @@ jobs:
         env:
           # Die App liegt unter https://<name>.github.io/<repo>/
           BASE_PATH: /${{ github.event.repository.name }}/
+          # URL des Preisproxys (Repo-Variable FARE_API_URL); leer ⇒ keine Preisanzeige
+          VITE_FARE_API_URL: ${{ vars.FARE_API_URL }}
       # GitHub Pages kennt keine SPA-Routen: unbekannte Pfade (z. B. /alternativen) liefern 404.html.
       - run: cp client/dist/index.html client/dist/404.html
       - uses: actions/upload-pages-artifact@v3

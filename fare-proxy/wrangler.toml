@@ -1,0 +1,9 @@
+# Cloudflare Worker: holt echte ÖV-Preise (OJP Fare) und hält den API-Key geheim.
+# Key setzen: npx wrangler secret put OJP_API_KEY  (im Ordner fare-proxy)
+name = "plan-b-fare-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+
+[vars]
+# Erlaubte Aufrufer (CORS), kommagetrennt. localhost-Ports sind immer erlaubt.
+ALLOWED_ORIGINS = "https://joel-muenger.github.io"

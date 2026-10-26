@@ -6,15 +6,16 @@
     "dev": "npm run build -w shared && concurrently -n shared,client -c gray,blue \"npm run dev -w shared\" \"npm run dev -w client\"",
     "build": "npm run build -w shared && npm run build -w client",
     "start": "npm run preview -w client",
-    "typecheck": "npm run build -w shared && tsc --noEmit -p client/tsconfig.app.json && tsc --noEmit -p client/tsconfig.node.json",
+    "typecheck": "npm run build -w shared && tsc --noEmit -p client/tsconfig.app.json && tsc --noEmit -p client/tsconfig.node.json && tsc --noEmit -p fare-proxy/tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run build -w shared && npm run test -w client"
+    "test": "npm run build -w shared && npm run test -w client && npm run test -w fare-proxy"
   },
   "workspaces": [
     "shared",
-    "client"
+    "client",
+    "fare-proxy"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -27,5 +28,10 @@
     "prettier": "^3.9.10",
     "typescript-eslint": "^8.71.1"
   },
-  "type": "module"
+  "type": "module",
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.25.12": true,
+    "workerd@1.20261019.1": true
+  }
 }

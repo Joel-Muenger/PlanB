@@ -4,7 +4,7 @@ Plan B ist ein Fachhochschul-MVP: Bei ÖV-Störungen in der Region Bern zeigt di
 
 ## Befehle
 
-Alle Befehle im Projekt-Root ausführen (npm Workspaces `shared`, `client`):
+Alle Befehle im Projekt-Root ausführen (npm Workspaces `shared`, `client`, `fare-proxy`):
 
 ```bash
 npm install                 # Abhängigkeiten für alle Workspaces
@@ -26,7 +26,7 @@ React (client/src) → lib/api.ts → data/alternatives.json
                               └→ transport.opendata.ch (direkt aus dem Browser, CORS erlaubt)
 ```
 
-Es gibt **keinen eigenen Server**; die App ist rein statisch und wird über GitHub Pages veröffentlicht (`.github/workflows/deploy.yml`, bei Push auf `main`). Der Basispfad kommt aus `BASE_PATH` (Vite `base`, Router `basename`, Asset-Pfade über `import.meta.env.BASE_URL`). `index.html` wird als `404.html` kopiert, damit SPA-Routen beim Neuladen funktionieren. Geheime API-Keys gehören deshalb nie ins Frontend; dafür bräuchte es wieder eine Serverfunktion.
+Bis auf den Preisproxy gibt es **keinen eigenen Server**; die App ist rein statisch und wird über GitHub Pages veröffentlicht (`.github/workflows/deploy.yml`, bei Push auf `main`). Der Basispfad kommt aus `BASE_PATH` (Vite `base`, Router `basename`, Asset-Pfade über `import.meta.env.BASE_URL`). `index.html` wird als `404.html` kopiert, damit SPA-Routen beim Neuladen funktionieren. Geheime API-Keys gehören deshalb nie ins Frontend; dafür bräuchte es wieder eine Serverfunktion.
 
 Die App ist eine **PWA** (vite-plugin-pwa, `registerType: 'autoUpdate'`): Manifest und Service Worker werden nur im Produktionsbuild erzeugt, also mit `npm run build` und `npx vite preview` im client testen. Die Icons in `client/public` werden aus `client/public/logo.svg` erzeugt: `npm run generate-pwa-assets -w client`.
 
@@ -38,6 +38,7 @@ Die App ist eine **PWA** (vite-plugin-pwa, `registerType: 'autoUpdate'`): Manife
   - Resultatseite zeigt pro Alternative Anbieterstatus (`status`, `statusNote`, optional je Störung über `statusByDisruption`) und Kapazität (`capacity`). Logik in `lib/alternatives.ts`: `resolveStatus` (Kapazität 0 ⇒ nicht verfügbar), `sortAlternatives` (nicht verfügbare ans Ende), `pickBest`, `capacityText`, `bikeCapacityNear` (Velo-Kapazität aus `bikeStations.json`, damit Resultat- und Stationsseite übereinstimmen).
   - `components/LiveConnections.tsx` – nächste echte Verbindungen Start → Ziel mit Verspätung über `getConnections()` (transport.opendata.ch `/v1/connections`, ohne Key).
   - `lib/api.ts` – `getConnections()`, `getBikeStations()`, `getAlternatives()` (Mock-Daten aus `data/alternatives.json`) und `findNearbyStops()` (transport.opendata.ch; bis zu 5 Haltestellen). Achtung: transport.opendata.ch verwendet `x` = Breite, `y` = Länge; Einträge ohne `id` sind Adressen und werden verworfen.
+- **fare-proxy/**: Cloudflare Worker für echte Billettpreise (OJP Fare/NOVA, Beta). `GET /fare?from=<Haltestellen-ID>&to=…&departure=ISO` → `{ full, halfFare }` (2. Kl.). Ablauf: OJP-1.0-TripRequest, dann zwei FareRequests (mit/ohne Halbtax) über `https://api.opentransportdata.swiss/ojp2020` – OJP Fare gibt es nur für OJP 1.0. Das SDK `ojp-sdk-next` baut/parst nur das XML, gesendet wird per `fetch` (axios des SDK ist in Workers unzuverlässig). Key als Secret `OJP_API_KEY` (`npx wrangler secret put OJP_API_KEY`), nie im Frontend. CORS: `ALLOWED_ORIGINS` in `wrangler.toml` + localhost; Cache 10 Min. je Strecke/Viertelstunde (Gratis-Limit 50/Min.). Lokal: `npm run dev -w fare-proxy`, Deploy: `npm run deploy -w fare-proxy`. Der Client fragt ihn über `getFares()` an, URL aus `VITE_FARE_API_URL` (GitHub-Repo-Variable `FARE_API_URL`); ohne URL oder bei Fehlern wird kein Preis angezeigt.
 - **shared/** (`@plan-b/shared`): einzige Quelle für API-Typen (`Alternative`, `AlternativeCategory`, `DisruptionType`, `AlternativesResponse`) und Konstanten (`DISRUPTION_TYPES`, `isDisruptionType`). Wird mit `tsc` nach `shared/dist` gebaut; `exports` zeigt auf `dist`. Der Client importiert aus `@plan-b/shared`. Nach einem frischen Clone ohne `npm run dev`/`build`/`typecheck` fehlen deshalb die Typen, bis `npm run build -w shared` gelaufen ist.
   - `client/src/types.ts` re-exportiert die geteilten Typen und enthält nur Client-eigene Typen (`SortMode`, `RouteRequest`).
 

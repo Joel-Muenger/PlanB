@@ -1,0 +1,21 @@
+{
+  "name": "plan-b-fare-proxy",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261026.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7",
+    "wrangler": "^4.152.0"
+  },
+  "dependencies": {
+    "ojp-sdk-next": "^0.21.4",
+    "ojp-shared-types": "^0.1.4"
+  }
+}

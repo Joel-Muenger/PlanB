@@ -1,6 +1,7 @@
-import { LoaderCircle, RotateCw, TrainFront } from 'lucide-react';
+import { LoaderCircle, RotateCw, Ticket, TrainFront } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getConnections, type LiveConnection } from '../lib/api';
+import { getConnections, getFares, type Fares, type LiveConnection } from '../lib/api';
+import { formatPrice } from '../lib/fares';
 
 const time = (iso: string) =>
   new Date(iso).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
@@ -10,6 +11,7 @@ export default function LiveConnections({ from, to }: { from: string; to: string
   const [connections, setConnections] = useState<LiveConnection[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [fares, setFares] = useState<Fares | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -18,6 +20,13 @@ export default function LiveConnections({ from, to }: { from: string; to: string
         if (!active) return;
         setConnections(data);
         setFailed(false);
+        const first = data[0];
+        setFares(null);
+        if (first) {
+          void getFares(first.fromId, first.toId, first.departure).then(
+            (result) => active && setFares(result),
+          );
+        }
       })
       .catch(() => active && setFailed(true));
     return () => {
@@ -89,7 +98,22 @@ export default function LiveConnections({ from, to }: { from: string; to: string
           ))}
         </ul>
       )}
-      <p className="mt-2 text-[11px] text-slate-400">Quelle: transport.opendata.ch</p>
+      {fares && (
+        <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-slate-50 px-3 py-2 text-sm">
+          <Ticket size={16} className="shrink-0 text-wine" />
+          <span className="font-bold">{formatPrice(fares.full.price, fares.full.currency)}</span>
+          <span className="text-slate-500">
+            mit Halbtax {formatPrice(fares.halfFare.price, fares.halfFare.currency)} · 2. Kl.
+          </span>
+          {fares.full.products.length > 0 && (
+            <span className="w-full text-xs text-slate-500">{fares.full.products.join(' + ')}</span>
+          )}
+        </p>
+      )}
+      <p className="mt-2 text-[11px] text-slate-400">
+        Quelle: transport.opendata.ch
+        {fares && ' · Preise: NOVA via opentransportdata.swiss (Beta)'}
+      </p>
     </section>
   );
 }
