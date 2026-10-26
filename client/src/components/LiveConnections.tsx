@@ -101,12 +101,17 @@ export default function LiveConnections({ from, to }: { from: string; to: string
       {fares && (
         <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-slate-50 px-3 py-2 text-sm">
           <Ticket size={16} className="shrink-0 text-wine" />
-          <span className="font-bold">{formatPrice(fares.full.price, fares.full.currency)}</span>
-          <span className="text-slate-500">
-            mit Halbtax {formatPrice(fares.halfFare.price, fares.halfFare.currency)} · 2. Kl.
+          <span className="font-bold">
+            {formatPrice(fares.second.price, fares.second.currency)}
           </span>
-          {fares.full.products.length > 0 && (
-            <span className="w-full text-xs text-slate-500">{fares.full.products.join(' + ')}</span>
+          <span className="text-slate-500">
+            2. Kl.
+            {fares.first && ` · 1. Kl. ${formatPrice(fares.first.price, fares.first.currency)}`}
+          </span>
+          {fares.second.products.length > 0 && (
+            <span className="w-full text-xs text-slate-500">
+              {fares.second.products.join(' + ')} · Vollpreis
+            </span>
           )}
         </p>
       )}

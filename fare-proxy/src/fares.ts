@@ -1,36 +1,53 @@
 import type { FareDeliverySchema } from 'ojp-shared-types';
 
 export interface FareSummary {
-  /** Gesamtpreis der Fahrt, z. B. 4.6 */
+  /** Gesamtpreis der Fahrt, z. B. 5.2 */
   price: number;
   currency: string;
-  /** Billettnamen je Abschnitt, z. B. ["Libero Kurzstrecke"] */
+  /** Billettnamen, z. B. ["Libero Einzelbillett"] */
   products: string[];
 }
 
-/**
- * Fasst die OJP-Fare-Antwort einer Fahrt zu einem Preis zusammen. NOVA kann eine
- * Fahrt in mehrere Abschnitte (tripFareResult) mit je eigenem Billett teilen;
- * der Fahrpreis ist die Summe der günstigsten Produkte je Abschnitt.
- */
-export function summarizeFare(delivery: FareDeliverySchema | undefined): FareSummary | null {
-  const result = delivery?.fareResult?.[0];
-  if (!result || result.tripFareResult.length === 0) return null;
+export type TravelClass = 'second' | 'first';
 
-  let price = 0;
-  let currency = 'CHF';
-  const products: string[] = [];
-  for (const section of result.tripFareResult) {
-    const priced = section.fareProduct
-      .map((p) => ({ ...p, value: Number(p.price) }))
-      .filter((p) => Number.isFinite(p.value));
-    if (priced.length === 0) return null;
-    const cheapest = priced.reduce((a, b) => (b.value < a.value ? b : a));
-    price += cheapest.value;
-    currency = cheapest.currency ?? currency;
-    products.push(cheapest.fareProductName);
+/**
+ * Fasst die OJP-Fare-Antwort für eine Klasse zu einem Fahrpreis zusammen.
+ *
+ * NOVA liefert je Klasse und Abschnitt (fromTripLegIdRef–toTripLegIdRef) ein eigenes
+ * tripFareResult – dieselbe Fahrt erscheint also z. B. einmal mit „second“ (5.20) und
+ * einmal mit „first“ (9.00). Pro Abschnitt zählt das günstigste Produkt der Klasse;
+ * der Fahrpreis ist die Summe über die Abschnitte.
+ */
+export function summarizeFare(
+  delivery: FareDeliverySchema | undefined,
+  travelClass: TravelClass,
+): FareSummary | null {
+  const sections = delivery?.fareResult?.[0]?.tripFareResult ?? [];
+  const cheapest = new Map<string, { price: number; currency: string; name: string }>();
+
+  for (const section of sections) {
+    const key = `${section.fromTripLegIdRef}-${section.toTripLegIdRef}`;
+    for (const product of section.fareProduct) {
+      const price = Number(product.price);
+      if (product.travelClass !== travelClass || !Number.isFinite(price)) continue;
+      const current = cheapest.get(key);
+      if (!current || price < current.price) {
+        cheapest.set(key, {
+          price,
+          currency: product.currency ?? 'CHF',
+          name: product.fareProductName,
+        });
+      }
+    }
   }
-  return { price: Math.round(price * 100) / 100, currency, products };
+
+  if (cheapest.size === 0) return null;
+  const parts = [...cheapest.values()];
+  return {
+    price: Math.round(parts.reduce((sum, p) => sum + p.price, 0) * 100) / 100,
+    currency: parts[0].currency,
+    products: [...new Set(parts.map((p) => p.name))],
+  };
 }
 
 /** Prüft, ob der Aufrufer die Preise abfragen darf (CORS). */

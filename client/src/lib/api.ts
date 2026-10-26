@@ -164,13 +164,14 @@ export interface FareSummary {
   products: string[];
 }
 
+/** Einzelbillett Vollpreis (Erwachsen) je Klasse */
 export interface Fares {
-  full: FareSummary;
-  halfFare: FareSummary;
+  second: FareSummary;
+  first: FareSummary | null;
 }
 
 /**
- * Echter Billettpreis (2. Klasse, Vollpreis und Halbtax) über den Preisproxy
+ * Echter Billettpreis (Einzelbillett 2. und 1. Klasse) über den Preisproxy
  * (fare-proxy, OJP Fare/NOVA). Ohne konfigurierten Proxy oder bei Fehlern null –
  * die App zeigt dann keinen Preis statt eines falschen.
  */

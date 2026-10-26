@@ -18,7 +18,7 @@ Plan B zeigt bei ÖV-Störungen in der Region Bern passende Alternativen und lei
 - **Kapazität:** freie Taxis mit Wartezeit, freie Velos an Stationen in der Nähe (aus denselben Daten wie die Stationssuche), Autos in der Nähe, Zugauslastung; ohne freie Fahrzeuge gilt ein Angebot als nicht verfügbar
 - Sortierung nach **schnellste**, **günstigste** oder **nachhaltigste** Option; nicht verfügbare Angebote stehen immer am Ende, „Beste Wahl“ ist die beste nutzbare Option
 - **Nächste Verbindungen live:** echte Abfahrten Start → Ziel mit Linie, Gleis, Umstiegen und Verspätung (transport.opendata.ch)
-- **Echter Billettpreis:** Einzelbillett 2. Klasse, Vollpreis und mit Halbtax, inkl. Libero-Verbund für Bernmobil (OJP Fare/NOVA, Beta; über einen eigenen Preisproxy)
+- **Echter Billettpreis:** Einzelbillett 2. und 1. Klasse (Vollpreis), inkl. Libero-Verbund für Bernmobil (OJP Fare/NOVA, Beta, unverbindlich; über einen eigenen Preisproxy)
 - Karte (OpenStreetMap) mit Strecke bzw. eigenem Standort
 - Störungsmeldung und Routenübersicht (Start → Ziel)
 

@@ -3,12 +3,14 @@ import { isAllowedOrigin, isStopId, summarizeFare, toSloid, type FareSummary } f
 
 /**
  * Plan-B-Preisproxy: nimmt Start-/Ziel-Haltestelle und Abfahrtszeit entgegen, sucht
- * die Verbindung über OJP 1.0 und fragt deren Preis bei OJP Fare (NOVA) ab – einmal
- * Vollpreis, einmal mit Halbtax. Der API-Key bleibt hier und erreicht nie den Browser.
+ * die Verbindung über OJP 1.0 und fragt deren Preis bei OJP Fare (NOVA) ab (2. und 1. Klasse). Der API-Key bleibt hier und erreicht nie den Browser.
  */
 
 export interface Env {
+  /** Token für OJP 1.0 (Verbindungssuche, Produkt tedp_ojp10) */
   OJP_API_KEY: string;
+  /** Token für OJP Fare (Produkt tedp_ojpfare); das Portal vergibt pro Produkt einen eigenen */
+  OJP_FARE_KEY?: string;
   ALLOWED_ORIGINS: string;
 }
 
@@ -59,7 +61,8 @@ async function lookupFares(
   to: string,
   departure: Date,
   apiKey: string,
-): Promise<{ full: FareSummary; halfFare: FareSummary } | null> {
+  fareKey: string,
+): Promise<{ second: FareSummary; first: FareSummary | null } | null> {
   const sdk = OJP.SDK.v1(REQUESTOR_REF, { url: OJP_V1_URL, authToken: null }, 'de');
 
   // OJP 1.0 kennt Haltestellen nur noch als SLOID (z. B. ch:1:sloid:16161).
@@ -72,47 +75,27 @@ async function lookupFares(
   const trips = await send(tripRequest, sdk, apiKey);
   if (!trips.ok) throw trips.error;
   const trip = trips.value.tripResult?.[0]?.trip;
-  // Diagnose (wrangler tail): Fand OJP eine Verbindung?
-  console.log('Verbindungssuche:', {
-    tripResults: trips.value.tripResult?.length ?? 0,
-    legs: trip?.tripLeg.length ?? 0,
-  });
   if (!trip) {
     console.log('Antwort Verbindungssuche:', tripRequest.mockResponseXML?.slice(0, 800));
     return null;
   }
 
-  // Standardparameter des SDK: Erwachsen, 2. Klasse, mit Halbtax.
-  const halfFareRequest = sdk.requests.FareRequest.initWithOJPv1Trips([structuredClone(trip)]);
-  const fullRequest = sdk.requests.FareRequest.initWithOJPv1Trips([structuredClone(trip)]);
-  for (const item of fullRequest.payload) {
+  // Vollpreis (Erwachsen, ohne Abo). NOVA liefert 2. und 1. Klasse in einer Antwort.
+  // Halbtax ignoriert die Beta-Schnittstelle derzeit (gleiche Preise), daher weggelassen.
+  const fareRequest = sdk.requests.FareRequest.initWithOJPv1Trips([trip]);
+  for (const item of fareRequest.payload) {
     for (const traveller of item.params?.traveller ?? []) delete traveller.entitlementProducts;
   }
-
-  const [full, halfFare] = await Promise.all([
-    send(fullRequest, sdk, apiKey, OJP_FARE_URL),
-    send(halfFareRequest, sdk, apiKey, OJP_FARE_URL),
-  ]);
-  if (!full.ok) throw full.error;
-  if (!halfFare.ok) throw halfFare.error;
-  const fullSummary = summarizeFare(full.value);
-  const halfSummary = summarizeFare(halfFare.value);
-  // Diagnose (wrangler tail): Wie sieht die Preisantwort aus?
-  for (const [label, request, response, summary] of [
-    ['Vollpreis', fullRequest, full.value, fullSummary],
-    ['Halbtax', halfFareRequest, halfFare.value, halfSummary],
-  ] as const) {
-    console.log(`Preisabfrage ${label}:`, {
-      fareResults: response.fareResult?.length ?? 0,
-      sections: response.fareResult?.[0]?.tripFareResult?.length ?? 0,
-      products: response.fareResult?.[0]?.tripFareResult?.flatMap((s) =>
-        s.fareProduct.map((p) => `${p.fareProductName}: ${p.price ?? '–'}`),
-      ),
-      summary,
-    });
-    if (!summary) console.log(`Antwort ${label}:`, request.mockResponseXML?.slice(0, 800));
+  const fares = await send(fareRequest, sdk, fareKey, OJP_FARE_URL);
+  if (!fares.ok) throw fares.error;
+  const second = summarizeFare(fares.value, 'second');
+  const first = summarizeFare(fares.value, 'first');
+  console.log('Preisabfrage:', { second: second?.price, first: first?.price });
+  if (!second) {
+    console.log('Antwort Preisabfrage:', fareRequest.mockResponseXML?.slice(0, 800));
+    return null;
   }
-  return fullSummary && halfSummary ? { full: fullSummary, halfFare: halfSummary } : null;
+  return { second, first };
 }
 
 function json(body: unknown, status: number, origin: string | null, cacheSeconds = 0) {
@@ -151,13 +134,19 @@ export default {
     // Gleiche Strecke zur gleichen Viertelstunde → gleicher Preis: zwischenspeichern,
     // um das Gratis-Limit von 50 Anfragen pro Minute zu schonen.
     const slot = new Date(Math.floor(departure.getTime() / 900_000) * 900_000).toISOString();
-    const cacheKey = new Request(`https://cache.plan-b/fare/${from}/${to}/${slot}`);
+    const cacheKey = new Request(`https://cache.plan-b/fare/v2/${from}/${to}/${slot}`);
     const cache = caches.default;
     const cached = await cache.match(cacheKey);
     if (cached) return json(await cached.json(), 200, allowedOrigin, CACHE_SECONDS);
 
     try {
-      const fares = await lookupFares(from, to, departure, env.OJP_API_KEY);
+      const fares = await lookupFares(
+        from,
+        to,
+        departure,
+        env.OJP_API_KEY,
+        env.OJP_FARE_KEY ?? env.OJP_API_KEY,
+      );
       if (!fares) return json({ error: 'Kein Preis gefunden' }, 404, allowedOrigin);
       ctx.waitUntil(
         cache.put(

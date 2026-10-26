@@ -8,7 +8,7 @@ Plan B bündelt bei ÖV-Störungen exemplarische Mobilitätsalternativen für Pe
 - Alternativzug, Taxi, PubliBike und Carsharing aus lokalen Mock-Daten
 - Sortierung nach schnellster, günstigster oder nachhaltigster Option
 - Anbieterstatus (verfügbar/eingeschränkt/nicht verfügbar) und Kapazität je Anbieter (Demo-Daten)
-- Nächste Verbindungen mit Echtzeit-Verspätung (transport.opendata.ch) und echtem Billettpreis inkl. Halbtax (OJP Fare, über den Preisproxy)
+- Nächste Verbindungen mit Echtzeit-Verspätung (transport.opendata.ch) und echtem Billettpreis 2./1. Klasse inkl. Libero (OJP Fare, über den Preisproxy)
 - Anbieter-Links als externe Weiterleitung
 - Responsive, mobile-first Oberfläche in Wine Red und Light Sand, mit Web-/iPhone-Ansicht
 - OpenStreetMap/Leaflet-Karte mit Mock-Route in Bern
@@ -50,8 +50,8 @@ npm start            # vite preview, http://localhost:4173
 
 Echte Preise kommen von OJP Fare (opentransportdata.swiss, Beta). Der dafür nötige API-Key darf nicht ins Frontend; deshalb läuft `fare-proxy/` als Cloudflare Worker:
 
-1. Key im [API-Manager](https://api-manager.opentransportdata.swiss/) von opentransportdata.swiss holen (OJP 1.0 / OJP Fare).
-2. Im Ordner `fare-proxy`: `npx wrangler login`, `npx wrangler secret put OJP_API_KEY`, `npm run deploy`.
+1. Im [API-Manager](https://api-manager.opentransportdata.swiss/) von opentransportdata.swiss die Produkte `tedp_ojp10` (OJP 1.0) und `tedp_ojpfare` (OJP Fare) abonnieren. Das Portal vergibt pro Produkt ein eigenes Credential/Token.
+2. Im Ordner `fare-proxy`: `npx wrangler login`, `npx wrangler secret put OJP_API_KEY` (Token OJP 1.0), `npx wrangler secret put OJP_FARE_KEY` (Token OJP Fare), `npm run deploy`.
 3. Die angezeigte Worker-URL in GitHub unter **Settings → Secrets and variables → Actions → Variables** als `FARE_API_URL` eintragen und den Workflow neu laufen lassen.
 
 Ohne Proxy funktioniert die App weiter, zeigt aber keine Preise.
