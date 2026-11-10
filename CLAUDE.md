@@ -49,7 +49,8 @@ Die App ist eine **PWA** (vite-plugin-pwa, `registerType: 'autoUpdate'`): Manife
 - Start/Ziel und Störungstyp beeinflussen die Ergebnisse noch nicht. Ohne Ortung zeigt die Karte eine Mock-Route; mit Ortung nur die eigene Position (das Ziel hat noch keine Koordinaten).
 - Geolocation funktioniert nur über HTTPS oder `localhost`. Auf dem Handy deshalb die GitHub-Pages-Version testen.
 - Der Zustand der Resultatseite geht beim Neuladen verloren (Router-State statt URL-Parameter).
-- `npm audit` meldet Schwachstellen in Build-Abhängigkeiten von Tailwind 3 (braces, micromatch, postcss-selector-parser). Behebung nur über Upgrade auf Tailwind 4.
+- `npm audit` meldet noch Schwachstellen ohne verfügbares Update: im Preisproxy über `ojp-sdk-next` (`fast-xml-parser`, `axios`; liest nur Antworten der offiziellen OJP-API, `axios` wird nicht genutzt) sowie in Build-Werkzeugen (`workbox-build`, `eslint`), die nicht ausgeliefert werden.
+- Content-Security-Policy als `<meta>`-Tag nur im Produktionsbuild (Plugin in `client/vite.config.ts`). Neue externe Quellen (APIs, Kartenkacheln) dort freigeben, sonst blockiert der Browser sie. Mit `npm run build` und `npx vite preview` im client testen.
 
 ## Konventionen
 
