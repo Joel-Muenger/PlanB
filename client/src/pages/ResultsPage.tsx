@@ -1,12 +1,15 @@
 import { AlertTriangle, ArrowLeft, LoaderCircle, RotateCw, WifiOff } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DISRUPTION_TYPES } from '@plan-b/shared';
+import AdOverlay from '../components/AdOverlay';
 import AlternativeCard from '../components/AlternativeCard';
 import Layout from '../components/Layout';
 import LiveConnections from '../components/LiveConnections';
+import { AD_SPOTS, claimAdBreak } from '../lib/ads';
 import { pickBest, sortAlternatives } from '../lib/alternatives';
 import { getAlternatives } from '../lib/api';
+import { isEmbedded, loadViewMode } from '../lib/viewMode';
 import RouteMap from '../components/RouteMap';
 import type { Alternative, RouteRequest, SortMode } from '../types';
 
@@ -17,6 +20,24 @@ const filters: { id: SortMode; label: string }[] = [
 ];
 
 type Status = 'loading' | 'success' | 'error';
+
+// Entscheid pro Navigation merken, damit doppeltes Rendern (StrictMode) den
+// 60-Minuten-Zähler nicht zweimal abfragt.
+const adDecisions = new Map<string, boolean>();
+
+/**
+ * Werbeblock höchstens alle 60 Minuten. In der iPhone-Ansicht zeigt ihn nur
+ * der iframe, nicht die äussere Seite.
+ */
+function adBreakFor(navigationKey: string): boolean {
+  let decision = adDecisions.get(navigationKey);
+  if (decision === undefined) {
+    const hostsPhone = !isEmbedded && loadViewMode() === 'mobile';
+    decision = !hostsPhone && claimAdBreak();
+    adDecisions.set(navigationKey, decision);
+  }
+  return decision;
+}
 
 export default function ResultsPage() {
   const location = useLocation();
@@ -30,6 +51,8 @@ export default function ResultsPage() {
   const [status, setStatus] = useState<Status>('loading');
   const [sort, setSort] = useState<SortMode>('fastest');
   const [attempt, setAttempt] = useState(0);
+  const [showAd, setShowAd] = useState(() => adBreakFor(location.key));
+  const hideAd = useCallback(() => setShowAd(false), []);
 
   useEffect(() => {
     let active = true;
@@ -57,6 +80,7 @@ export default function ResultsPage() {
 
   return (
     <Layout>
+      {showAd && <AdOverlay ads={AD_SPOTS} onFinish={hideAd} />}
       <Link
         to="/"
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-wine"
