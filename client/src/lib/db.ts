@@ -38,22 +38,28 @@ async function saveBytes(bytes: Uint8Array): Promise<void> {
   });
 }
 
-let dbPromise: Promise<Database> | null = null;
+let sqlPromise: ReturnType<typeof initSqlJs> | null = null;
 
-/** Lädt die Datenbank einmalig (gespeicherter Stand oder neu). */
-export function getDb(): Promise<Database> {
-  dbPromise ??= (async () => {
-    const SQL = await initSqlJs({ locateFile: () => wasmUrl });
-    const bytes = await loadBytes().catch(() => null);
-    const db = bytes ? new SQL.Database(bytes) : new SQL.Database();
+/**
+ * Führt eine Aktion auf dem aktuellen gespeicherten Stand aus. Die Datenbank wird
+ * jedes Mal frisch aus IndexedDB geladen und bei `write` sofort zurückgeschrieben.
+ * So überschreiben sich mehrere Fenster (Tabs, iPhone-Vorschau im iframe) nicht
+ * gegenseitig mit veralteten Kopien.
+ */
+export async function withDb<T>(
+  action: (db: Database) => T | Promise<T>,
+  { write = false } = {},
+): Promise<T> {
+  sqlPromise ??= initSqlJs({ locateFile: () => wasmUrl });
+  const SQL = await sqlPromise;
+  const bytes = await loadBytes().catch(() => null);
+  const db = bytes ? new SQL.Database(bytes) : new SQL.Database();
+  try {
     migrate(db);
-    return db;
-  })();
-  return dbPromise;
-}
-
-/** Aktuellen Stand dauerhaft speichern (nach jeder Änderung aufrufen). */
-export async function persistDb(): Promise<void> {
-  const db = await getDb();
-  await saveBytes(db.export());
+    const result = await action(db);
+    if (write) await saveBytes(db.export());
+    return result;
+  } finally {
+    db.close();
+  }
 }

@@ -13,7 +13,7 @@ import {
   subscribePlus,
   type AccountUser,
 } from './account';
-import { getDb, persistDb } from './db';
+import { withDb } from './db';
 
 const SESSION_KEY = 'planb_session';
 const listeners = new Set<() => void>();
@@ -59,34 +59,29 @@ export function hasActivePlus(): boolean {
 
 export const accountActions = {
   async register(email: string, password: string) {
-    const db = await getDb();
-    const user = await registerUser(db, email, password);
-    await persistDb();
-    setSession(user);
+    setSession(await withDb((db) => registerUser(db, email, password), { write: true }));
   },
   async login(email: string, password: string) {
-    const user = await loginUser(await getDb(), email, password);
-    setSession(user);
+    setSession(await withDb((db) => loginUser(db, email, password)));
   },
   logout() {
     setSession(null);
   },
   async subscribe() {
-    if (!current) return;
-    const user = subscribePlus(await getDb(), current.id);
-    await persistDb();
-    setSession(user);
+    const id = current?.id;
+    if (id === undefined) return;
+    setSession(await withDb((db) => subscribePlus(db, id), { write: true }));
   },
   async cancel() {
-    if (!current) return;
-    const user = cancelPlus(await getDb(), current.id);
-    await persistDb();
-    setSession(user);
+    const id = current?.id;
+    if (id === undefined) return;
+    setSession(await withDb((db) => cancelPlus(db, id), { write: true }));
   },
   /** Sitzung mit der Datenbank abgleichen (z. B. Konto gelöscht). */
   async refresh() {
-    if (!current) return;
-    setSession(getUser(await getDb(), current.id));
+    const id = current?.id;
+    if (id === undefined) return;
+    setSession(await withDb((db) => getUser(db, id)));
   },
 };
 
