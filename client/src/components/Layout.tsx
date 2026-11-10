@@ -8,6 +8,7 @@ import {
   saveViewMode,
   type ViewMode,
 } from '../lib/viewMode';
+import AccountMenu from './AccountMenu';
 import PhonePreview from './PhonePreview';
 import ViewModeToggle from './ViewModeToggle';
 
@@ -56,7 +57,10 @@ export default function Layout({ children }: PropsWithChildren) {
           <p className="text-lg font-extrabold leading-none tracking-wide">PLAN B</p>
           <p className="mt-1 text-xs text-slate-500">Deine Mobilitätsalternative für Bern</p>
         </div>
-        {!isEmbedded && <ViewModeToggle mode={mode} onChange={changeMode} />}
+        <div className="ml-auto flex items-center gap-2">
+          {!showPhone && <AccountMenu />}
+          {!isEmbedded && <ViewModeToggle mode={mode} onChange={changeMode} />}
+        </div>
       </header>
       {showPhone ? (
         <PhonePreview ref={phoneRef} src={withBase(location.pathname)} />

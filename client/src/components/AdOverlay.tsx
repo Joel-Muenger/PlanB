@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AD_TICK_MS, adProgress, type AdSpot } from '../lib/ads';
 
 interface Props {
@@ -157,6 +158,12 @@ export default function AdOverlay({ ads, onFinish }: Props) {
             {ad.ctaText}
           </button>
         </div>
+        <Link
+          to="/abo"
+          className="self-center text-xs font-semibold text-neutral-300 underline underline-offset-2 hover:text-white"
+        >
+          Werbefrei mit Plan B Plus
+        </Link>
         <div className="h-[3px] overflow-hidden rounded bg-white/20">
           <div
             className="h-full bg-brand transition-[width] duration-100 ease-linear"

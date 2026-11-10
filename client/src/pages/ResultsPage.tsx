@@ -9,6 +9,7 @@ import LiveConnections from '../components/LiveConnections';
 import { AD_SPOTS, claimAdBreak } from '../lib/ads';
 import { pickBest, sortAlternatives } from '../lib/alternatives';
 import { getAlternatives } from '../lib/api';
+import { hasActivePlus } from '../lib/useAccount';
 import { isEmbedded, loadViewMode } from '../lib/viewMode';
 import RouteMap from '../components/RouteMap';
 import type { Alternative, RouteRequest, SortMode } from '../types';
@@ -26,14 +27,14 @@ type Status = 'loading' | 'success' | 'error';
 const adDecisions = new Map<string, boolean>();
 
 /**
- * Werbeblock höchstens alle 60 Minuten. In der iPhone-Ansicht zeigt ihn nur
+ * Werbeblock höchstens alle 60 Minuten, nie mit aktivem Plus-Abo. In der iPhone-Ansicht zeigt ihn nur
  * der iframe, nicht die äussere Seite.
  */
 function adBreakFor(navigationKey: string): boolean {
   let decision = adDecisions.get(navigationKey);
   if (decision === undefined) {
     const hostsPhone = !isEmbedded && loadViewMode() === 'mobile';
-    decision = !hostsPhone && claimAdBreak();
+    decision = !hostsPhone && !hasActivePlus() && claimAdBreak();
     adDecisions.set(navigationKey, decision);
   }
   return decision;
